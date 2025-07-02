@@ -1,2 +1,2 @@
 # Radar Warfare
-An online multiplater game
+An online multiplayer game.
