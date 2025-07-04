@@ -10,6 +10,7 @@ services:
 
     # matchmaking-service:
     #     build: ./matchmaking-service
+    #     container_name: rw-matchmaking-service
     #     ports:
     #         - "8081:8081"
     #     depends_on:

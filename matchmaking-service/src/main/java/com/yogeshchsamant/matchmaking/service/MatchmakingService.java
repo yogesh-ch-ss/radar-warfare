@@ -3,6 +3,7 @@ package com.yogeshchsamant.matchmaking.service;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -16,11 +17,16 @@ public class MatchmakingService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public MatchmakingService(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
 
     public void enquePlayer(Player player) {
+        System.out.println("Redis connection factory: " + redisTemplate.getConnectionFactory());
         redisTemplate.opsForList().rightPush("matchmaking:queue", player);
+        System.out.println("Player enqueued: " + player.getPlayerId());
         tryMatchingPlayers();
     }
 
@@ -40,7 +46,9 @@ public class MatchmakingService {
 
             MatchInfo matchInfo = new MatchInfo(sessionId, p1, p2);
 
+            // send matchInfo to p1 and p2.
             messagingTemplate.convertAndSend("subscribe/match/" + p1.getPlayerId(), matchInfo);
+            messagingTemplate.convertAndSend("subscribe/match/" + p2.getPlayerId(), matchInfo);
 
         }
     }

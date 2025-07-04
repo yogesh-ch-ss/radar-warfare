@@ -1,22 +1,21 @@
 package com.yogeshchsamant.matchmaking.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-import com.yogeshchsamant.matchmaking.service.MatchmakingService;
-
 @Configuration
-@EnableWebSocket
+@EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-    // WebSocketMessageBrokerConfigurer - Uses STOMP protocol.
-    // Good for pub-sub models, no manual management of sessions and routing.
+    /*
+     * WebSocketMessageBrokerConfigurer - Uses STOMP protocol.
+     * Good for pub-sub models, no manual management of sessions and routing.
+     */
 
-    @Autowired
-    private MatchmakingService matchmakingService;
+    // @Autowired
+    // private MatchmakingService matchmakingService;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
@@ -32,7 +31,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
          * options.
          */
 
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+        registry.addEndpoint("/ws") // endpoint
+                .setAllowedOriginPatterns("*") // allow from all (*) origin
+                .withSockJS(); // support SockJS fallback
 
     }
 

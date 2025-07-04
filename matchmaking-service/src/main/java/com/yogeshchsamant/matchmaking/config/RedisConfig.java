@@ -13,10 +13,11 @@ public class RedisConfig {
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        // return new LettuceConnectionFactory("localhost", 6379); // localhost
-        return new LettuceConnectionFactory(); // docker-compose
+        return new LettuceConnectionFactory("localhost", 6379); // localhost
+        // return new LettuceConnectionFactory(); // docker-compose
     }
 
+    @Bean
     public RedisTemplate<String, Object> redisTemplate() {
         // key (string) - value (json object)
         RedisTemplate<String, Object> template = new RedisTemplate<>();
