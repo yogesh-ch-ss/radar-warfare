@@ -3,7 +3,6 @@ package com.yogeshchsamant.matchmaking.service;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -24,7 +23,8 @@ public class MatchmakingService {
     }
 
     public void enquePlayer(Player player) {
-        System.out.println("Redis connection factory: " + redisTemplate.getConnectionFactory());
+        // System.out.println("Redis connection factory: " +
+        // redisTemplate.getConnectionFactory());
         redisTemplate.opsForList().rightPush("matchmaking:queue", player);
         System.out.println("Player enqueued: " + player.getPlayerId());
         tryMatchingPlayers();
@@ -32,6 +32,7 @@ public class MatchmakingService {
 
     public Player dequePlayer() {
         Player dequedPlayer = (Player) redisTemplate.opsForList().leftPop("matchmaking:queue");
+        System.out.println("Player dequeued: " + dequedPlayer.getPlayerId());
         return dequedPlayer;
     }
 
@@ -41,6 +42,7 @@ public class MatchmakingService {
         if (queueSize != null && queueSize >= 2) {
             Player p1 = dequePlayer();
             Player p2 = dequePlayer();
+            System.out.println("Matching " + p1.getPlayerId() + " and " + p2.getPlayerId());
 
             String sessionId = UUID.randomUUID().toString();
 

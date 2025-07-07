@@ -6,6 +6,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+// @EnableWebSocketMessageBroker - enables STOMP over websocket.
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
@@ -19,8 +20,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        /* Documentation (Before Override) - Configure message broker options. */
+        /*
+         * Documentation (Before Override) - Configure message broker options.
+         * Configure pub-sub path prefix "/subscribe".
+         */
         config.enableSimpleBroker("/subscribe"); // clients subscribe here
+        // This is STOMP (WebSocket) pub-sub over the path /subscribe/**.
     }
 
     @Override
