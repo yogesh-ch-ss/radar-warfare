@@ -7,6 +7,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yogeshchsamant.matchmaking.model.MatchInfo;
 import com.yogeshchsamant.matchmaking.model.Player;
 
@@ -22,7 +24,7 @@ public class MatchmakingService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    public void enquePlayer(Player player) {
+    public void enquePlayer(Player player) throws JsonProcessingException {
         // System.out.println("Redis connection factory: " +
         // redisTemplate.getConnectionFactory());
         redisTemplate.opsForList().rightPush("matchmaking:queue", player);
@@ -38,19 +40,35 @@ public class MatchmakingService {
 
     public void tryMatchingPlayers() {
         Long queueSize = redisTemplate.opsForList().size("matchmaking:queue");
+        System.out.println("Queue size: " + queueSize);
 
         if (queueSize != null && queueSize >= 2) {
             Player p1 = dequePlayer();
             Player p2 = dequePlayer();
-            System.out.println("Matching " + p1.getPlayerId() + " and " + p2.getPlayerId());
+            System.out.println("Players matched: " + p1.getPlayerId() + " vs " + p2.getPlayerId());
 
             String sessionId = UUID.randomUUID().toString();
 
             MatchInfo matchInfo = new MatchInfo(sessionId, p1, p2);
 
-            // send matchInfo to p1 and p2.
-            messagingTemplate.convertAndSend("subscribe/match/" + p1.getPlayerId(), matchInfo);
-            messagingTemplate.convertAndSend("subscribe/match/" + p2.getPlayerId(), matchInfo);
+            ObjectMapper mapper = new ObjectMapper();
+            String payload;
+            try {
+                payload = mapper.writeValueAsString(matchInfo);
+
+                System.out.println("Sending match info to:");
+                System.out.println("/subscribe/match/" + p1.getPlayerId());
+                System.out.println("/subscribe/match/" + p2.getPlayerId());
+                System.out.println("Payload: " + payload);
+
+                // send matchInfo to p1 and p2.
+                messagingTemplate.convertAndSend("/subscribe/match/" + p1.getPlayerId(), payload);
+                messagingTemplate.convertAndSend("/subscribe/match/" + p2.getPlayerId(), payload);
+
+            } catch (JsonProcessingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
         }
     }

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.yogeshchsamant.matchmaking.model.Player;
 import com.yogeshchsamant.matchmaking.service.MatchmakingService;
 
@@ -16,7 +17,12 @@ public class MatchmakingController {
 
     @MessageMapping("matchmaking/join")
     public void handlePlayerJoin(Player player) {
-        matchmakingService.enquePlayer(player);
+        try {
+            matchmakingService.enquePlayer(player);
+        } catch (JsonProcessingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
 }

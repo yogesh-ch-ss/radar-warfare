@@ -7,39 +7,56 @@
         <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     </head>
     <body>
+        <h3>Matchmaking Client</h3>
+        <label
+            >Player ID: <input type="text" id="playerId" value="player1"
+        /></label>
+        <br /><br />
         <button onclick="connect()">Connect</button>
         <button onclick="join()">Join Matchmaking</button>
 
         <script>
-            const player = { playerId: "player1" };
             let stompClient = null;
+            let playerId = "";
 
             function connect() {
+                playerId = document.getElementById("playerId").value;
                 const socket = new SockJS("http://localhost:8080/ws");
                 stompClient = Stomp.over(socket);
 
                 stompClient.connect({}, function (frame) {
                     console.log("Connected: " + frame);
 
+                    // Subscribe to the personal match topic
                     stompClient.subscribe(
-                        "/subscribe/match/" + player.playerId,
+                        "/subscribe/match/" + playerId,
                         function (message) {
-                            const matchInfo = JSON.parse(message.body);
-                            console.log(
-                                "Match Found for " + playerId + ":",
-                                matchInfo
-                            );
+                            console.log("MATCHED!!!");
+                            console.log("Match Found for player2: ",JSON.parse(message.body));
                         }
                     );
+
+                    console.log("Subscribed to: /subscribe/match/" + playerId);
                 });
             }
 
             function join() {
+                if (!stompClient || !stompClient.connected) {
+                    console.error("Not connected.");
+                    return;
+                }
+
+                const player = {
+                    playerId: playerId,
+                };
+
                 stompClient.send(
-                    "/matchmaking/join",
+                    "/app/matchmaking/join",
                     {},
                     JSON.stringify(player)
                 );
+
+                console.log("Sent join request for:", player);
             }
         </script>
     </body>
