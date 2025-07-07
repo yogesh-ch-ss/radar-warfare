@@ -26,7 +26,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
          */
         config.enableSimpleBroker("/subscribe"); // clients subscribe here
         // This is STOMP (WebSocket) pub-sub over the path /subscribe/**.
-        config.setApplicationDestinationPrefixes("/app"); // Client sends to "/app/**"
+        config.setApplicationDestinationPrefixes("/app"); // Client sends to "/app/**" - eg. "/app/matchmaking/join"
+                                                          // (matchmaking controller)
     }
 
     @Override
@@ -37,7 +38,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
          * options.
          */
 
-        registry.addEndpoint("/ws") // endpoint
+        registry.addEndpoint("/ws") // endpoint to connect to the websocket - every client should init via this
                 .setAllowedOriginPatterns("*") // allow from all (*) origin
                 .withSockJS(); // support SockJS fallback
 

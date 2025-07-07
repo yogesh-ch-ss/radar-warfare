@@ -28,6 +28,7 @@
                     console.log("Connected: " + frame);
 
                     // Subscribe to the personal match topic
+                    // eg. player1 will subscribe to "/subscribe/match/player1"
                     stompClient.subscribe(
                         "/subscribe/match/" + playerId,
                         function (message) {

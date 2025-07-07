@@ -25,8 +25,7 @@ public class MatchmakingService {
     }
 
     public void enquePlayer(Player player) throws JsonProcessingException {
-        // System.out.println("Redis connection factory: " +
-        // redisTemplate.getConnectionFactory());
+        // System.out.println("Redis connection factory: " + redisTemplate.getConnectionFactory());
         redisTemplate.opsForList().rightPush("matchmaking:queue", player);
         System.out.println("Player enqueued: " + player.getPlayerId());
         tryMatchingPlayers();
@@ -61,7 +60,12 @@ public class MatchmakingService {
                 System.out.println("/subscribe/match/" + p2.getPlayerId());
                 System.out.println("Payload: " + payload);
 
-                // send matchInfo to p1 and p2.
+                // send matchInfo to p1 and p2 via /subscribe/match/.
+                /*
+                 * eg. player1 will subscribe to path "/subscribe/match/player1",
+                 * so player1 must receive the info via "/subscribe/match/player1".
+                 * thus, info is sent to "/subscribe/match/player1".
+                 */
                 messagingTemplate.convertAndSend("/subscribe/match/" + p1.getPlayerId(), payload);
                 messagingTemplate.convertAndSend("/subscribe/match/" + p2.getPlayerId(), payload);
 
