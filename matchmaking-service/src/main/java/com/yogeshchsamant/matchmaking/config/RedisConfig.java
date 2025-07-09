@@ -10,13 +10,20 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
+    // @Value("${spring.redis.host}")
+    // private String redisHost;
+
+    // @Value("${spring.redis.port}")
+    // private int redisPort;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         // return new LettuceConnectionFactory("localhost", 6379); // localhost
-        return new LettuceConnectionFactory(); // docker-compose
+        // return new LettuceConnectionFactory(); // docker-compose
+        return new LettuceConnectionFactory("redis", 6379); // docker-compose
     }
 
+    @Bean
     public RedisTemplate<String, Object> redisTemplate() {
         // key (string) - value (json object)
         RedisTemplate<String, Object> template = new RedisTemplate<>();

@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Player {
-    private String playerId;
-    private String sessionId;
+public class MatchInfo {
+    private String sessionID;
+    private Player player1;
+    private Player player2;
+
 }
