@@ -2,6 +2,7 @@ package com.yogeshchsamant.matchmaking;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.autoconfigure.cache.CacheProperties.Redis;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -62,21 +64,27 @@ class MatchmakingServiceApplicationTests {
 
 	}
 
-	// @Test
-	// public void testMatchingPlayers() {
-	// 	Player player1 = new Player();
-	// 	player1.setPlayerId("player1");
-	// 	Player player2 = new Player();
-	// 	player2.setPlayerId("player2");
+	@Test
+	public void testMatchingPlayers() {
+		Player player1 = new Player();
+		player1.setPlayerId("player1");
+		Player player2 = new Player();
+		player2.setPlayerId("player2");
 
-	// 	try {
-	// 		matchmakingService.enquePlayer(player1);
-	// 		matchmakingService.enquePlayer(player2);
-	// 	} catch (JsonProcessingException e) {
-	// 		e.printStackTrace();
-	// 	}
+		// Mock the RedisTemplate behavior:
+		// When redisTemplate.opsForList().size("matchmaking:queue") is called,
+		// return 2 (Long), simulating that two players are in the queue.
+		when(redisTemplate.opsForList().size("matchmaking:queue")).thenReturn((long) 2);
 
-	// 	verify(messagingTemplate).convertAndSend(startsWith("/subscribe/match/"), anyString());
-	// }
+		// Mock the listOperations.leftPop() to return player1 on the first call and
+		// player2 on the second.
+		// This simulates dequeuing two players from the queue.
+		when(listOperations.leftPop("matchmaking:queue")).thenReturn(player1).thenReturn(player2);
 
+
+		// testing tryMatchingPlayers() logic, and assuming Redis behaves as mocked above...
+		matchmakingService.tryMatchingPlayers();
+
+		verify(messagingTemplate, times(2)).convertAndSend(startsWith("/subscribe/match/"), anyString());
+	}
 }
