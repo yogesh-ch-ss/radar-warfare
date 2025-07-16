@@ -48,6 +48,8 @@ public class MatchmakingService {
 
             String sessionId = UUID.randomUUID().toString();
 
+            p1.setSessionId(sessionId);
+            p2.setSessionId(sessionId);
             MatchInfo matchInfo = new MatchInfo(sessionId, p1, p2);
 
             ObjectMapper mapper = new ObjectMapper();

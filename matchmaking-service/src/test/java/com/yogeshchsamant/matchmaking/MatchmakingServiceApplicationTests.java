@@ -2,6 +2,7 @@ package com.yogeshchsamant.matchmaking;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.autoconfigure.cache.CacheProperties.Redis;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -50,7 +50,7 @@ class MatchmakingServiceApplicationTests {
 	}
 
 	@Test
-	public void testEnquePlayer_callsRedisRightPush() {
+	public void testEnquePlayer() {
 		Player player = new Player();
 		player.setPlayerId("player1");
 
@@ -65,7 +65,7 @@ class MatchmakingServiceApplicationTests {
 	}
 
 	@Test
-	public void testMatchingPlayers() {
+	public void testTryMatchingPlayers() {
 		Player player1 = new Player();
 		player1.setPlayerId("player1");
 		Player player2 = new Player();
@@ -86,5 +86,16 @@ class MatchmakingServiceApplicationTests {
 		matchmakingService.tryMatchingPlayers();
 
 		verify(messagingTemplate, times(2)).convertAndSend(startsWith("/subscribe/match/"), anyString());
+	}
+
+	@Test
+	public void testTryMatchingPlayers_onePlayer(){
+
+		when(redisTemplate.opsForList().size("matchmaking:queue")).thenReturn((long) 1);
+
+		matchmakingService.tryMatchingPlayers();
+
+		verify(messagingTemplate, never()).convertAndSend(anyString(), anyString());
+
 	}
 }
