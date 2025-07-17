@@ -72,7 +72,6 @@ public class MatchmakingService {
                 messagingTemplate.convertAndSend("/subscribe/match/" + p2.getPlayerId(), payload);
 
             } catch (JsonProcessingException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 

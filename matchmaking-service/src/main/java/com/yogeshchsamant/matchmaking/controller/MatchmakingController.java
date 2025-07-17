@@ -20,7 +20,6 @@ public class MatchmakingController {
         try {
             matchmakingService.enquePlayer(player);
         } catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
