@@ -59,7 +59,7 @@ public class GameplayService {
     public void processAttack(AttackPayload attackPayload) {
 
         // extract MatchInfo from attackPayload's sessionId
-        MatchInfo matchInfo = (MatchInfo) redisTemplate.opsForValue().get("game" + attackPayload.getSessionId());
+        MatchInfo matchInfo = (MatchInfo) redisTemplate.opsForValue().get("game:" + attackPayload.getSessionId());
 
         Player attacker = new Player();
         Player defender = new Player();
@@ -93,7 +93,7 @@ public class GameplayService {
         cell.get().setHit(true);
 
         if (cell.get().isHasBase()) {
-            defender.getGrid().defeceAttacked(); // reduces grid's defence by 1
+            defender.getGrid().defenceAttacked(); // reduces grid's defence by 1
         }
 
         // check win condition
@@ -102,12 +102,12 @@ public class GameplayService {
 
             // TODO handle endgame logic
 
-            return;
+            // return;
         }
 
         // switch turns
         attacker.setTurn(false);
-        attacker.setTurn(true);
+        defender.setTurn(true);
 
         /*
          * java objects are passed by reference.

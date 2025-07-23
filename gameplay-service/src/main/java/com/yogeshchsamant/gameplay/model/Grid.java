@@ -22,6 +22,18 @@ public class Grid implements Serializable {
             }
             this.grid.add(row);
         }
+
+    }
+
+    public void fillCellsForTest() {
+        // this function fills 2 cells with a base
+        // cells filled with a base - (0, 0), (4, 5)
+
+        Optional<Cell> cell1 = getCell(0, 0);
+        Optional<Cell> cell2 = getCell(4, 5);
+
+        cell1.get().setHasBase(true);
+        cell2.get().setHasBase(true);
     }
 
     public Optional<Cell> getCell(int i, int j) {
@@ -31,7 +43,7 @@ public class Grid implements Serializable {
         return Optional.empty();
     }
 
-    public void defeceAttacked() {
+    public void defenceAttacked() {
         this.defences -= 1;
     }
 }
