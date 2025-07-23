@@ -6,11 +6,15 @@ import java.util.*;
 import lombok.Data;
 
 @Data
-public class Grid implements Serializable{
+public class Grid implements Serializable {
     private static final long serialVersionUID = 1L;
     private List<List<Cell>> grid = new ArrayList<List<Cell>>();
+    private int defences;
 
     public Grid() {
+
+        this.defences = 10; // 10 defence units
+
         for (int i = 0; i < 10; i++) {
             List<Cell> row = new ArrayList<>();
             for (int j = 0; j < 10; j++) {
@@ -25,5 +29,9 @@ public class Grid implements Serializable{
             return Optional.of(this.grid.get(i).get(j));
         }
         return Optional.empty();
+    }
+
+    public void defeceAttacked() {
+        this.defences -= 1;
     }
 }

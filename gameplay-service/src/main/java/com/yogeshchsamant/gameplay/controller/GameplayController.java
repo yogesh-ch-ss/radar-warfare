@@ -5,6 +5,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
+import com.yogeshchsamant.gameplay.model.AttackPayload;
 import com.yogeshchsamant.gameplay.model.MatchInfoDTO;
 import com.yogeshchsamant.gameplay.service.GameplayService;
 
@@ -16,14 +17,12 @@ public class GameplayController {
 
     @MessageMapping("/gameplay/init")
     public void handleGameInit(@Payload MatchInfoDTO matchInfoDTO) {
-        // TODO need to write handle gameinit logic using GameplayService
         gameplayService.gameInit(matchInfoDTO);
     }
 
     @MessageMapping("/gameplay/attack")
-    public void handleAttack() {
-        // TODO need to write handle attack logic using GameplayService
-
+    public void handleAttack(@Payload AttackPayload attackPayload) {
+        gameplayService.processAttack(attackPayload);
     }
 
 }
