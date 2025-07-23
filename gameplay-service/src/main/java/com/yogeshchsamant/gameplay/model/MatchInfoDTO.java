@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MatchInfoDTO {
     private String sessionID;
-    private Player player1;
-    private Player player2;
+    private PlayerDTO player1;
+    private PlayerDTO player2;
 }

@@ -1,11 +1,13 @@
 package com.yogeshchsamant.gameplay.model;
 
+import java.io.Serializable;
 import java.util.*;
 
 import lombok.Data;
 
 @Data
-public class Grid {
+public class Grid implements Serializable{
+    private static final long serialVersionUID = 1L;
     private List<List<Cell>> grid = new ArrayList<List<Cell>>();
 
     public Grid() {
