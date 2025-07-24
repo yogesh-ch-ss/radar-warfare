@@ -13,11 +13,9 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -120,14 +118,49 @@ class GameplayServiceApplicationTests {
 		assertFalse(capturedMatchInfo.getPlayer1().isTurn());
 		assertTrue(capturedMatchInfo.getPlayer2().isTurn());
 
-		verify(redisTemplate.opsForValue()).set(eq("game:" + sessionId), any(MatchInfo.class));
+		verify(redisTemplate.opsForValue()).set(eq("game:" + sessionId), eq(capturedMatchInfo));
 
-		verify(messagingTemplate).convertAndSend(eq("/subscribe/game/" + sessionId), any(MatchInfo.class));
+		verify(messagingTemplate).convertAndSend(eq("/subscribe/game/" + sessionId), eq(capturedMatchInfo));
 
 	}
 
-	// @Test
-	// public void testProcessAttack_missBase() {
-	// // TODO write test when the cell has no base
-	// }
+	@Test
+	public void testProcessAttack_missBase() {
+		String sessionId = "testSession";
+
+		Grid grid = new Grid();
+		grid.fillCellsForTest(); // (0, 0), (4, 5) - hasBase = true
+
+		Player attacker = new Player("attacker", sessionId, true, grid);
+		Player defender = new Player("defender", sessionId, false, grid);
+
+		MatchInfo matchInfo = new MatchInfo(sessionId, attacker, defender);
+
+		when(redisTemplate.opsForValue().get("game:" + sessionId)).thenReturn(matchInfo);
+
+		AttackPayload attackPayload = new AttackPayload(sessionId, attacker.getPlayerId(), 1, 1);
+
+		ArgumentCaptor<MatchInfo> matchInfoCaptor = ArgumentCaptor.forClass(MatchInfo.class);
+
+		gameplayService.processAttack(attackPayload);
+
+		verify(valueOperations).set(eq("game:" + sessionId), matchInfoCaptor.capture());
+		MatchInfo capturedMatchInfo = matchInfoCaptor.getValue();
+
+		Grid attackedGrid = capturedMatchInfo.getPlayer2().getGrid();
+		Optional<Cell> attackedCell = capturedMatchInfo.getPlayer2().getGrid().getCell(1, 1);
+
+		assertFalse(attackedCell.get().isHasBase());
+		assertTrue(attackedCell.get().isHit());
+
+		assertEquals(attackedGrid.getDefences(), 10);
+
+		assertFalse(capturedMatchInfo.getPlayer1().isTurn());
+		assertTrue(capturedMatchInfo.getPlayer2().isTurn());
+
+		verify(redisTemplate.opsForValue()).set(eq("game:" + sessionId), eq(capturedMatchInfo));
+
+		verify(messagingTemplate).convertAndSend(eq("/subscribe/game/" + sessionId), eq(capturedMatchInfo));
+
+	}
 }
