@@ -9,14 +9,18 @@
     <body>
         <h3>Multiplayer Battleship Test Client</h3>
 
-        <label
-            >Player ID: <input type="text" id="playerId" value="player1"
-        /></label>
+        <label>
+            Player ID: <input type="text" id="playerId" value="player1" />
+        </label>
         <br /><br />
 
         <button onclick="connectMatchmaking()">Connect to Matchmaking</button>
         <button onclick="joinMatchmaking()">Join Matchmaking</button>
         <br /><br />
+
+        <p>
+            Connection Status: <span id="connection-status">Disconnected</span>
+        </p>
 
         <div id="gameplay-controls" style="display: none">
             <h4>Gameplay Controls</h4>
@@ -52,8 +56,6 @@
                             );
 
                             sessionId = matchInfo.sessionID;
-
-                            // connect to gameplay service
                             connectGameplay(matchInfo);
                         }
                     );
@@ -89,14 +91,12 @@
                 gameplayClient.connect({}, function (frame) {
                     console.log("Connected to Gameplay: " + frame);
 
-                    // Subscribe to game updates
                     const gameTopic = "/subscribe/game/" + matchInfo.sessionID;
                     gameplayClient.subscribe(gameTopic, function (message) {
                         const gameState = JSON.parse(message.body);
                         console.log("Game State Update Received:", gameState);
                     });
 
-                    // Send init payload to gameplay
                     gameplayClient.send(
                         "/app/gameplay/init",
                         {},
@@ -106,10 +106,18 @@
                         "Sent MatchInfoDTO to gameplay-service for init"
                     );
 
-                    // Show attack UI
                     document.getElementById("gameplay-controls").style.display =
                         "block";
+                    document.getElementById("connection-status").innerText =
+                        "Active";
                 });
+
+                // Detect WebSocket closure (e.g., TTL expiry)
+                gameplayClient.ws.onclose = function () {
+                    console.warn("Gameplay WebSocket disconnected.");
+                    document.getElementById("connection-status").innerText =
+                        "Disconnected";
+                };
             }
 
             function sendAttack() {
@@ -128,7 +136,7 @@
 
                 const attackPayload = {
                     sessionId: sessionId,
-                    playerId: playerId,
+                    attackerId: playerId,
                     x: x,
                     y: y,
                 };
@@ -140,6 +148,16 @@
                 );
                 console.log("Sent attack payload:", attackPayload);
             }
+
+            // Optional: Periodically update connection status
+            setInterval(() => {
+                const statusSpan = document.getElementById("connection-status");
+                if (gameplayClient && gameplayClient.connected) {
+                    statusSpan.innerText = "Active";
+                } else {
+                    statusSpan.innerText = "Disconnected";
+                }
+            }, 5000);
         </script>
     </body>
 </html>

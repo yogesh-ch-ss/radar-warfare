@@ -62,18 +62,24 @@ public class GameplayService {
         // extract MatchInfo from attackPayload's sessionId
         MatchInfo matchInfo = (MatchInfo) redisTemplate.opsForValue().get("game:" + attackPayload.getSessionId());
 
+        System.out.println("sessionId: " + attackPayload.getSessionId() + "; attackerId: "
+                + attackPayload.getAttackerId() + "; x: " + attackPayload.getX() + "; y: " + attackPayload.getY());
+
         Player attacker = new Player();
         Player defender = new Player();
 
         // set attacker and defender
-        if (matchInfo.getPlayer1().isTurn()) {
+        if (matchInfo.getPlayer1().isTurn()
+                && attackPayload.getAttackerId().equals(matchInfo.getPlayer1().getPlayerId())) {
             attacker = matchInfo.getPlayer1();
             defender = matchInfo.getPlayer2();
-        } else if (matchInfo.getPlayer2().isTurn()) {
+        } else if (matchInfo.getPlayer2().isTurn()
+                && attackPayload.getAttackerId().equals(matchInfo.getPlayer2().getPlayerId())) {
             attacker = matchInfo.getPlayer2();
             defender = matchInfo.getPlayer1();
         } else {
             System.err.println("attacker and defender cannot be defined!");
+
         }
 
         // --- perform attack ---
