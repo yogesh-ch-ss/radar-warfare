@@ -1,5 +1,6 @@
 package com.yogeshchsamant.gameplay.service;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,7 @@ public class GameplayService {
 
         // store in redis
         // stored in redis under the namespace "game:{sessionId}:matchInfo"
-        redisTemplate.opsForValue().set("game:" + sessionId, matchInfo);
+        redisTemplate.opsForValue().set("game:" + sessionId, matchInfo, Duration.ofMinutes(1));
     }
 
     public void processAttack(AttackPayload attackPayload) {
@@ -117,7 +118,7 @@ public class GameplayService {
          */
 
         // save updates to redis
-        redisTemplate.opsForValue().set("game:" + attackPayload.getSessionId(), matchInfo);
+        redisTemplate.opsForValue().set("game:" + attackPayload.getSessionId(), matchInfo, Duration.ofMinutes(1));
 
         // notify both players (via STOMP)
         messagingTemplate.convertAndSend("/subscribe/game/" + attackPayload.getSessionId(), matchInfo);
