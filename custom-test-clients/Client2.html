@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>STOMP WebSocket Test - Matchmaking & Gameplay</title>
+        <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    </head>
+    <body>
+        <h3>Multiplayer Battleship Test Client</h3>
+
+        <label
+            >Player ID: <input type="text" id="playerId" value="player1"
+        /></label>
+        <br /><br />
+
+        <button onclick="connectMatchmaking()">Connect to Matchmaking</button>
+        <button onclick="joinMatchmaking()">Join Matchmaking</button>
+        <br /><br />
+
+        <div id="gameplay-controls" style="display: none">
+            <h4>Gameplay Controls</h4>
+            <label>Row (X): <input type="number" id="attackX" /></label><br />
+            <label>Column (Y): <input type="number" id="attackY" /></label
+            ><br /><br />
+            <button onclick="sendAttack()">Send Attack</button>
+        </div>
+
+        <script>
+            let matchmakingClient = null;
+            let gameplayClient = null;
+            let playerId = "";
+            let sessionId = "";
+
+            function connectMatchmaking() {
+                playerId = document.getElementById("playerId").value;
+
+                const socket = new SockJS("http://localhost:8081/ws");
+                matchmakingClient = Stomp.over(socket);
+
+                matchmakingClient.connect({}, function (frame) {
+                    console.log("Connected to Matchmaking: " + frame);
+
+                    const subscribePath = "/subscribe/match/" + playerId;
+                    matchmakingClient.subscribe(
+                        subscribePath,
+                        function (message) {
+                            const matchInfo = JSON.parse(message.body);
+                            console.log(
+                                "MATCHED!!! MatchInfoDTO received:",
+                                matchInfo
+                            );
+
+                            sessionId = matchInfo.sessionID;
+
+                            // connect to gameplay service
+                            connectGameplay(matchInfo);
+                        }
+                    );
+
+                    console.log(
+                        "Subscribed to matchmaking topic:",
+                        subscribePath
+                    );
+                });
+            }
+
+            function joinMatchmaking() {
+                if (!matchmakingClient || !matchmakingClient.connected) {
+                    console.error("Not connected to matchmaking.");
+                    return;
+                }
+
+                const payload = { playerId: playerId };
+                matchmakingClient.send(
+                    "/app/matchmaking/join",
+                    {},
+                    JSON.stringify(payload)
+                );
+                console.log("Sent matchmaking join request for:", playerId);
+            }
+
+            function connectGameplay(matchInfo) {
+                const gameplaySocket = new SockJS(
+                    "http://localhost:8082/gameplay-ws"
+                );
+                gameplayClient = Stomp.over(gameplaySocket);
+
+                gameplayClient.connect({}, function (frame) {
+                    console.log("Connected to Gameplay: " + frame);
+
+                    // Subscribe to game updates
+                    const gameTopic = "/subscribe/game/" + matchInfo.sessionID;
+                    gameplayClient.subscribe(gameTopic, function (message) {
+                        const gameState = JSON.parse(message.body);
+                        console.log("Game State Update Received:", gameState);
+                    });
+
+                    // Send init payload to gameplay
+                    gameplayClient.send(
+                        "/app/gameplay/init",
+                        {},
+                        JSON.stringify(matchInfo)
+                    );
+                    console.log(
+                        "Sent MatchInfoDTO to gameplay-service for init"
+                    );
+
+                    // Show attack UI
+                    document.getElementById("gameplay-controls").style.display =
+                        "block";
+                });
+            }
+
+            function sendAttack() {
+                const x = parseInt(document.getElementById("attackX").value);
+                const y = parseInt(document.getElementById("attackY").value);
+
+                if (!gameplayClient || !gameplayClient.connected) {
+                    console.error("Not connected to gameplay.");
+                    return;
+                }
+
+                if (isNaN(x) || isNaN(y)) {
+                    console.error("Invalid coordinates.");
+                    return;
+                }
+
+                const attackPayload = {
+                    sessionId: sessionId,
+                    playerId: playerId,
+                    x: x,
+                    y: y,
+                };
+
+                gameplayClient.send(
+                    "/app/gameplay/attack",
+                    {},
+                    JSON.stringify(attackPayload)
+                );
+                console.log("Sent attack payload:", attackPayload);
+            }
+        </script>
+    </body>
+</html>

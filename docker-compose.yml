@@ -22,6 +22,17 @@ services:
         environment:
             - REDIS_HOST=redis
 
+    gameplay-service:
+        build: ./gameplay-service
+        container_name: rw-gameplay-service
+        ports:
+            - "8082:8082"
+        depends_on:
+            redis:
+                condition: service_healthy
+        environment:
+            - REDIS_HOST=redis
+
     # frontend:
     #     build: ./frontend
     #     ports:
@@ -30,9 +41,4 @@ services:
     #         - matchmaking-service
     #         - gameplay-service
 
-    # gameplay-service:
-    #     build: ./gameplay-service
-    #     ports:
-    #         - "8082:8082"
-    #     depends_on:
-    #         - redis
+
