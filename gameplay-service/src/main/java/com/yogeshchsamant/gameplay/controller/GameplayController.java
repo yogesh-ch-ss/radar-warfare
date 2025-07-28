@@ -22,7 +22,11 @@ public class GameplayController {
 
     @MessageMapping("/gameplay/attack")
     public void handleAttack(@Payload AttackPayload attackPayload) {
-        gameplayService.processAttack(attackPayload);
+        try {
+            gameplayService.processAttack(attackPayload);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

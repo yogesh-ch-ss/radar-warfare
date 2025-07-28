@@ -30,6 +30,14 @@ public class GameplayService {
     public void gameInit(MatchInfoDTO matchinfoDTO) {
 
         String sessionId = matchinfoDTO.getSessionID();
+        String sessionKeyForRedis = "game:" + sessionId;
+
+        if (redisTemplate.opsForValue().get(sessionKeyForRedis) != null) {
+            // the sessionKeyForRedis already exists in redis since gameInit would have been
+            // called by the other client
+            System.out.println("Game already initialized for sessionId: " + sessionId);
+            return;
+        }
 
         // create grid
         Grid grid1 = new Grid();
@@ -54,13 +62,17 @@ public class GameplayService {
 
         // store in redis
         // stored in redis under the namespace "game:{sessionId}:matchInfo"
-        redisTemplate.opsForValue().set("game:" + sessionId, matchInfo, Duration.ofMinutes(1));
+        redisTemplate.opsForValue().set(sessionKeyForRedis, matchInfo, Duration.ofMinutes(1));
     }
 
     public void processAttack(AttackPayload attackPayload) {
 
         // extract MatchInfo from attackPayload's sessionId
         MatchInfo matchInfo = (MatchInfo) redisTemplate.opsForValue().get("game:" + attackPayload.getSessionId());
+
+        if (matchInfo == null) {
+            throw new IllegalStateException("Session expired or does not exist: " + attackPayload.getSessionId());
+        }
 
         System.out.println("sessionId: " + attackPayload.getSessionId() + "; attackerId: "
                 + attackPayload.getAttackerId() + "; x: " + attackPayload.getX() + "; y: " + attackPayload.getY());
@@ -79,7 +91,7 @@ public class GameplayService {
             defender = matchInfo.getPlayer1();
         } else {
             System.err.println("attacker and defender cannot be defined!");
-
+            throw new IllegalArgumentException("Invalid attacker or not attacker's turn.");
         }
 
         // --- perform attack ---
