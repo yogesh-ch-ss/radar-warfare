@@ -32,12 +32,13 @@ public class GameplayService {
         String sessionId = matchinfoDTO.getSessionID();
         String sessionKeyForRedis = "game:" + sessionId;
 
-        if (redisTemplate.opsForValue().get(sessionKeyForRedis) != null) {
-            // the sessionKeyForRedis already exists in redis since gameInit would have been
-            // called by the other client
-            System.out.println("Game already initialized for sessionId: " + sessionId);
-            return;
-        }
+        // if (redisTemplate.hasKey(sessionKeyForRedis)) {
+        // // the sessionKeyForRedis already exists in redis since gameInit would have
+        // been
+        // // called by the other client
+        // System.out.println("Game already initialized for sessionId: " + sessionId);
+        // return;
+        // }
 
         // create grid
         Grid grid1 = new Grid();
@@ -62,7 +63,17 @@ public class GameplayService {
 
         // store in redis
         // stored in redis under the namespace "game:{sessionId}:matchInfo"
-        redisTemplate.opsForValue().set(sessionKeyForRedis, matchInfo, Duration.ofMinutes(1));
+        // redisTemplate.opsForValue().set(sessionKeyForRedis, matchInfo,
+        // Duration.ofMinutes(2));
+
+        Boolean sessionKeyPresentOnRedis = redisTemplate.opsForValue()
+                .setIfAbsent(sessionKeyForRedis, matchInfo, Duration.ofMinutes(2));
+        if (sessionKeyPresentOnRedis) {
+            System.out.println("Game initialized successfully for sessionId: " + sessionId);
+        } else {
+            System.out.println("Game already initialized for sessionId: " + sessionId);
+        }
+
     }
 
     public void processAttack(AttackPayload attackPayload) {
@@ -136,7 +147,7 @@ public class GameplayService {
          */
 
         // save updates to redis
-        redisTemplate.opsForValue().set("game:" + attackPayload.getSessionId(), matchInfo, Duration.ofMinutes(1));
+        redisTemplate.opsForValue().set("game:" + attackPayload.getSessionId(), matchInfo, Duration.ofMinutes(2));
 
         // notify both players (via STOMP)
         messagingTemplate.convertAndSend("/subscribe/game/" + attackPayload.getSessionId(), matchInfo);
