@@ -1,5 +1,7 @@
 package com.yogeshchsamant.gameplay.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -11,6 +13,8 @@ import com.yogeshchsamant.gameplay.service.GameplayService;
 
 @Controller
 public class GameplayController {
+
+    Logger logger = LoggerFactory.getLogger(GameplayController.class);
 
     @Autowired
     private GameplayService gameplayService;
@@ -24,8 +28,14 @@ public class GameplayController {
     public void handleAttack(@Payload AttackPayload attackPayload) {
         try {
             gameplayService.processAttack(attackPayload);
+        } catch (IllegalStateException e) {
+            logger.error(e.toString());
+        } catch (IllegalArgumentException e) {
+            logger.error(e.toString());
         } catch (Exception e) {
-            e.printStackTrace();
+            // e.printStackTrace();
+            logger.error(e.toString());
+            logger.error(e.getStackTrace().toString());
         }
     }
 

@@ -3,6 +3,8 @@ package com.yogeshchsamant.gameplay.service;
 import java.time.Duration;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.yogeshchsamant.gameplay.model.AttackPayload;
 import com.yogeshchsamant.gameplay.model.Cell;
+import com.yogeshchsamant.gameplay.model.EndGamePayload;
 import com.yogeshchsamant.gameplay.model.Grid;
 import com.yogeshchsamant.gameplay.model.MatchInfo;
 import com.yogeshchsamant.gameplay.model.MatchInfoDTO;
@@ -17,6 +20,8 @@ import com.yogeshchsamant.gameplay.model.Player;
 
 @Component
 public class GameplayService {
+
+    Logger logger = LoggerFactory.getLogger(GameplayService.class);
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -69,9 +74,11 @@ public class GameplayService {
         Boolean sessionKeyPresentOnRedis = redisTemplate.opsForValue()
                 .setIfAbsent(sessionKeyForRedis, matchInfo, Duration.ofMinutes(2));
         if (sessionKeyPresentOnRedis) {
-            System.out.println("Game initialized successfully for sessionId: " + sessionId);
+            String message = "Game initialized successfully for sessionId: " + sessionId;
+            logger.info(message);
         } else {
-            System.out.println("Game already initialized for sessionId: " + sessionId);
+            String message = "Game already initialized for sessionId: " + sessionId;
+            logger.info(message);
         }
 
     }
@@ -85,7 +92,7 @@ public class GameplayService {
             throw new IllegalStateException("Session expired or does not exist: " + attackPayload.getSessionId());
         }
 
-        System.out.println("sessionId: " + attackPayload.getSessionId() + "; attackerId: "
+        logger.info("sessionId: " + attackPayload.getSessionId() + "; attackerId: "
                 + attackPayload.getAttackerId() + "; x: " + attackPayload.getX() + "; y: " + attackPayload.getY());
 
         Player attacker = new Player();
@@ -101,7 +108,7 @@ public class GameplayService {
             attacker = matchInfo.getPlayer2();
             defender = matchInfo.getPlayer1();
         } else {
-            System.err.println("attacker and defender cannot be defined!");
+            logger.warn("Attacker and defender cannot be defined!");
             throw new IllegalArgumentException("Invalid attacker or not attacker's turn.");
         }
 
@@ -112,7 +119,7 @@ public class GameplayService {
          * cell's isHit = true
          * check if cell has base
          * if base, grid's defences -= 1; else, continue
-         * CHECK WIN CONDITION
+         * !!! CHECK WIN CONDITION !!!
          * switch isTurn for plater1 and player2
          * save new update to redis
          * notify both players
@@ -120,24 +127,39 @@ public class GameplayService {
 
         Optional<Cell> cell = defender.getGrid().getCell(attackPayload.getX(), attackPayload.getY());
 
-        cell.get().setHit(true);
+        // backend robustness:
+        // if cell is already hit, the turns do not switch
+        // the attacker will attack again
 
-        if (cell.get().isHasBase()) {
-            defender.getGrid().defenceAttacked(); // reduces grid's defence by 1
+        boolean isCellHitAlready = cell.get().isHit();
+
+        if (isCellHitAlready) {
+            // if cell is already hit, maintain turn
+            logger.warn("Cell x:" + attackPayload.getX() + "; y:" + attackPayload.getY() + " is already hit");
+        } else {
+            // if cell is not hit, hit, check win condition, switch turns
+            cell.get().setHit(true);
+
+            if (cell.get().isHasBase()) {
+                defender.getGrid().defenceAttacked(); // reduces grid's defence by 1
+            }
+
+            // !!! CHECK WIN CONDITION !!!
+            if (defender.didPlayerLose()) {
+                logger.info(attacker.getPlayerId() + " WON!!!");
+
+                // handle endgame logic - handleEndGame()
+                handleEndGame(matchInfo, attacker.getPlayerId());
+                return;
+            }
+
+            // switch turns
+            attacker.setTurn(false);
+            defender.setTurn(true);
+
+            logger.info("Cell x:" + attackPayload.getX() + "; y:" + attackPayload.getY() + " is successfully hit");
+
         }
-
-        // check win condition
-        if (defender.didPlayerLose()) {
-            System.out.println(attacker.getPlayerId() + " WON!!!");
-
-            // TODO handle endgame logic
-
-            // return;
-        }
-
-        // switch turns
-        attacker.setTurn(false);
-        defender.setTurn(true);
 
         /*
          * java objects are passed by reference.
@@ -151,6 +173,31 @@ public class GameplayService {
 
         // notify both players (via STOMP)
         messagingTemplate.convertAndSend("/subscribe/game/" + attackPayload.getSessionId(), matchInfo);
+    }
+
+    public void handleEndGame(MatchInfo matchInfo, String winnerId) {
+        /*
+         * Remove key from redis.
+         * Unpair players from MatchInfo.
+         * Delete MatchInfo object.
+         * graceful deletion and clearing any trace of the match.
+         */
+
+        String sessionId = matchInfo.getSessionID();
+        String redisKey = "game:" + sessionId;
+
+        // remove key from redis
+        redisTemplate.delete(redisKey);
+        logger.info("Deleted game session from redis for game:" + sessionId);
+
+        // unpair players in matchInfo
+        matchInfo.setPlayer1(null);
+        matchInfo.setPlayer2(null);
+
+        // notify clients about winner
+        EndGamePayload endGamePayload = new EndGamePayload(sessionId, winnerId);
+        messagingTemplate.convertAndSend("/subscribe/game/" + sessionId + "/end", endGamePayload);
+
     }
 
 }
