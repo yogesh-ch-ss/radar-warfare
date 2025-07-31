@@ -4,10 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +52,9 @@ class GameplayServiceApplicationTests {
 	void setUp() {
 		// Mock the opsForValue() method to return your ValueOperations mock
 		when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
+		when(valueOperations.setIfAbsent(anyString(), any(MatchInfo.class), any(Duration.class))).thenReturn(true);
+
 		gameplayService = new GameplayService(messagingTemplate);
 		// inject redisTemplate manually since it’s @Autowired and not in the
 		// constructor
@@ -69,7 +75,7 @@ class GameplayServiceApplicationTests {
 
 		// Verify that redisTemplate.opsForValue().set() was called with the correct key
 		// and a MatchInfo object
-		verify(valueOperations).set(eq("game:testSession"), matchInfoCaptor.capture());
+		verify(valueOperations).setIfAbsent(eq("game:testSession"), matchInfoCaptor.capture(), any(Duration.class));
 
 		// Get the captured MatchInfo object
 		MatchInfo stored = matchInfoCaptor.getValue();
@@ -103,7 +109,7 @@ class GameplayServiceApplicationTests {
 
 		gameplayService.processAttack(attackPayload);
 
-		verify(valueOperations).set(eq("game:" + sessionId), matchInfoCaptor.capture());
+		verify(valueOperations).set(eq("game:" + sessionId), matchInfoCaptor.capture(), any(Duration.class));
 		MatchInfo capturedMatchInfo = matchInfoCaptor.getValue();
 
 		Grid attackedGrid = capturedMatchInfo.getPlayer2().getGrid();
@@ -112,12 +118,13 @@ class GameplayServiceApplicationTests {
 		assertTrue(attackedCell.get().isHasBase());
 		assertTrue(attackedCell.get().isHit());
 
-		assertEquals(attackedGrid.getDefences(), 9);
+		// fillCellsForTest() makes defences = 2
+		assertEquals(attackedGrid.getDefences(), 1);
 
 		assertFalse(capturedMatchInfo.getPlayer1().isTurn());
 		assertTrue(capturedMatchInfo.getPlayer2().isTurn());
 
-		verify(redisTemplate.opsForValue()).set(eq("game:" + sessionId), eq(capturedMatchInfo));
+		verify(redisTemplate.opsForValue()).set(eq("game:" + sessionId), eq(capturedMatchInfo), any(Duration.class));
 
 		verify(messagingTemplate).convertAndSend(eq("/subscribe/game/" + sessionId), eq(capturedMatchInfo));
 
@@ -143,7 +150,7 @@ class GameplayServiceApplicationTests {
 
 		gameplayService.processAttack(attackPayload);
 
-		verify(valueOperations).set(eq("game:" + sessionId), matchInfoCaptor.capture());
+		verify(valueOperations).set(eq("game:" + sessionId), matchInfoCaptor.capture(), any(Duration.class));
 		MatchInfo capturedMatchInfo = matchInfoCaptor.getValue();
 
 		Grid attackedGrid = capturedMatchInfo.getPlayer2().getGrid();
@@ -152,14 +159,16 @@ class GameplayServiceApplicationTests {
 		assertFalse(attackedCell.get().isHasBase());
 		assertTrue(attackedCell.get().isHit());
 
-		assertEquals(attackedGrid.getDefences(), 10);
+		// fillCellsForTest() makes defences = 2
+		assertEquals(attackedGrid.getDefences(), 2);
 
 		assertFalse(capturedMatchInfo.getPlayer1().isTurn());
 		assertTrue(capturedMatchInfo.getPlayer2().isTurn());
 
-		verify(redisTemplate.opsForValue()).set(eq("game:" + sessionId), eq(capturedMatchInfo));
+		verify(redisTemplate.opsForValue()).set(eq("game:" + sessionId), eq(capturedMatchInfo), any(Duration.class));
 
 		verify(messagingTemplate).convertAndSend(eq("/subscribe/game/" + sessionId), eq(capturedMatchInfo));
-
 	}
+
+	
 }
