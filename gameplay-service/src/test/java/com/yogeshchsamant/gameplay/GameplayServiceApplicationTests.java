@@ -197,7 +197,7 @@ class GameplayServiceApplicationTests {
 		verify(valueOperations).set(eq("game:" + sessionId), matchInfoCaptor.capture(), any(Duration.class));
 		MatchInfo capturedMatchInfo = matchInfoCaptor.getValue();
 
-		Grid attackedGrid = capturedMatchInfo.getPlayer2().getGrid();
+		// Grid attackedGrid = capturedMatchInfo.getPlayer2().getGrid();
 		Optional<Cell> attackedCell = capturedMatchInfo.getPlayer2().getGrid().getCell(0, 0);
 
 		assertFalse(attackedCell.get().isHasBase());
