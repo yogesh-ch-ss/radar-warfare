@@ -26,8 +26,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
          */
         config.enableSimpleBroker("/subscribe"); // clients subscribe here
         // This is STOMP (WebSocket) pub-sub over the path /subscribe/**.
-        config.setApplicationDestinationPrefixes("/app"); // Client sends to "/app/**" - eg. "/app/matchmaking/join"
-                                                          // (matchmaking controller)
+        config.setApplicationDestinationPrefixes("/app"); // Client sends to "/app/**" - eg. "/app/gameplay/init"
+                                                          // (gameplay controller)
     }
 
     @Override

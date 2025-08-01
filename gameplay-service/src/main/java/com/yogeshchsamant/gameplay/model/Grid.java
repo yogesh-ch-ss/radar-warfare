@@ -28,12 +28,15 @@ public class Grid implements Serializable {
     public void fillCellsForTest() {
         // this function fills 2 cells with a base
         // cells filled with a base - (0, 0), (4, 5)
+        // sets defences value as 2
 
         Optional<Cell> cell1 = getCell(0, 0);
         Optional<Cell> cell2 = getCell(4, 5);
 
         cell1.get().setHasBase(true);
         cell2.get().setHasBase(true);
+
+        setDefences(2);
     }
 
     public Optional<Cell> getCell(int i, int j) {
