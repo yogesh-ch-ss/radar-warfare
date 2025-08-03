@@ -3,12 +3,11 @@ import Footer from "../components/Footer";
 
 const RulesPage = ({ onNavigate }) => {
     const rules = [
-        "Each player receives a 10x10 combat grid",
-        "10 defensive installations are randomly deployed",
-        "Players alternate launching attack coordinates",
-        "Hit installations reduce total defense count",
-        "First player to reach 0 defenses loses",
-        "Sessions auto-expire after 2 minutes of inactivity",
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
     ];
 
     return (
