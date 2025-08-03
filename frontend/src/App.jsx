@@ -1,11 +1,28 @@
-function App() {
-    return (
-        <>
-            <div>
-                <h1 className="text-red-500">Hello from Radar Warfare!</h1>
-            </div>
-        </>
-    );
-}
+import { useState } from "react";
 
-export default App;
+import HomePage from "./pages/HomePage";
+
+export default function App() {
+    const [currentPage, setCurrentPage] = useState("home");
+
+    const navigate = (page) => {
+        setCurrentPage(page);
+    };
+
+    const renderPage = () => {
+        switch (currentPage) {
+            case "home":
+                return <HomePage onNavigate={navigate} />;
+            case "about":
+                return <AboutPage onNavigate={navigate} />;
+            case "rules":
+                return <RulesPage onNavigate={navigate} />;
+            case "matchmaking":
+                return <MatchmakingPage onNavigate={navigate} />;
+            default:
+                return <HomePage onNavigate={navigate} />;
+        }
+    };
+
+    return <div className="font-mono">{renderPage()}</div>;
+}
