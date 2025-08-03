@@ -1,6 +1,8 @@
 import { useState } from "react";
 
 import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
+import RulesPage from "./pages/RulesPage";
 
 export default function App() {
     const [currentPage, setCurrentPage] = useState("home");
