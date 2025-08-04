@@ -4,16 +4,8 @@ import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import RulesPage from "./pages/RulesPage";
 import MatchmakingPage from "./pages/MatchmakingPage";
-import GameLobbyPage from "./pages/GameLobbyPage";
-
-const generatePlayerId = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let result = "";
-    for (let i = 0; i < 10; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-};
+// import GameLobbyPage from "./pages/GameLobbyPage";
+import GameplayPage from "./pages/GameplayPage";
 
 const App = () => {
     const [currentPage, setCurrentPage] = useState("home");
@@ -21,6 +13,20 @@ const App = () => {
     const [sessionId, setSessionId] = useState("");
     const [opponentId, setOpponentId] = useState("");
     const [connectionStatus, setConnectionStatus] = useState("disconnected");
+
+    const [gameState, setGameState] = useState(null);
+    const [myGrid, setMyGrid] = useState(
+        Array(10)
+            .fill()
+            .map(() => Array(10).fill(""))
+    );
+    const [enemyGrid, setEnemyGrid] = useState(
+        Array(10)
+            .fill()
+            .map(() => Array(10).fill(""))
+    );
+    const [isMyTurn, setIsMyTurn] = useState(false);
+    const [gameStatus, setGameStatus] = useState("waiting"); // 'waiting', 'playing', 'won', 'lost'
 
     // WebSocket client references
     const matchmakingClientRef = useRef(null);
@@ -63,18 +69,15 @@ const App = () => {
                         );
 
                         setSessionId(matchInfo.sessionID);
-                        // Determine opponent ID
                         const opponent =
                             matchInfo.player1ID === playerIdToUse
                                 ? matchInfo.player2ID
                                 : matchInfo.player1ID;
                         setOpponentId(opponent);
 
-                        // Connect to gameplay
+                        // Connect to gameplay and go directly to game
                         connectToGameplay(matchInfo);
-
-                        // Navigate to game lobby
-                        setCurrentPage("lobby");
+                        setCurrentPage("gameplay");
                     });
 
                     console.log(
@@ -106,6 +109,7 @@ const App = () => {
     };
 
     // Connect to gameplay WebSocket
+    // Replace the existing connectToGameplay function with:
     const connectToGameplay = (matchInfo) => {
         try {
             const gameplaySocket = new window.SockJS(
@@ -122,8 +126,12 @@ const App = () => {
 
                     const gameTopic = "/subscribe/game/" + matchInfo.sessionID;
                     gameplayClient.subscribe(gameTopic, (message) => {
-                        const gameState = JSON.parse(message.body);
-                        console.log("Game State Update Received:", gameState);
+                        const newGameState = JSON.parse(message.body);
+                        console.log(
+                            "Game State Update Received:",
+                            newGameState
+                        );
+                        handleGameStateUpdate(newGameState);
                     });
 
                     gameplayClient.send(
@@ -140,7 +148,6 @@ const App = () => {
                 }
             );
 
-            // Detect WebSocket closure
             gameplayClient.ws.onclose = () => {
                 console.warn("Gameplay WebSocket disconnected.");
                 setConnectionStatus("disconnected");
@@ -198,6 +205,7 @@ const App = () => {
     }, []);
 
     // Render current page
+    // Replace the existing renderCurrentPage function with:
     const renderCurrentPage = () => {
         switch (currentPage) {
             case "home":
@@ -215,13 +223,22 @@ const App = () => {
                         onCancel={handleCancelMatchmaking}
                     />
                 );
-            case "lobby":
+            case "gameplay":
                 return (
-                    <GameLobbyPage
+                    <GameplayPage
                         onNavigate={handleNavigate}
                         playerId={playerId}
-                        sessionId={sessionId}
                         opponentId={opponentId}
+                        sessionId={sessionId}
+                        myGrid={myGrid}
+                        enemyGrid={enemyGrid}
+                        isMyTurn={isMyTurn}
+                        gameStatus={gameStatus}
+                        onCellClick={handleCellClick}
+                        onEndGame={() => {
+                            handleCancelMatchmaking();
+                            setCurrentPage("home");
+                        }}
                     />
                 );
             case "rules":
@@ -239,6 +256,82 @@ const App = () => {
     };
 
     return <div className="App">{renderCurrentPage()}</div>;
+};
+
+const generatePlayerId = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let result = "";
+    for (let i = 0; i < 10; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+};
+
+const handleGameStateUpdate = (newGameState) => {
+    setGameState(newGameState);
+
+    // Update grids based on game state
+    if (newGameState.playerBoards) {
+        const myBoard = newGameState.playerBoards[playerId];
+        const enemyBoard = newGameState.playerBoards[opponentId];
+
+        if (myBoard) {
+            setMyGrid(
+                myBoard.grid ||
+                    Array(10)
+                        .fill()
+                        .map(() => Array(10).fill(""))
+            );
+        }
+
+        if (enemyBoard) {
+            // Only show hits/misses on enemy grid, not their ships
+            const enemyDisplayGrid = Array(10)
+                .fill()
+                .map(() => Array(10).fill(""));
+            if (enemyBoard.attacks) {
+                enemyBoard.attacks.forEach((attack) => {
+                    enemyDisplayGrid[attack.x][attack.y] = attack.hit
+                        ? "hit"
+                        : "miss";
+                });
+            }
+            setEnemyGrid(enemyDisplayGrid);
+        }
+    }
+
+    // Update turn and game status
+    setIsMyTurn(newGameState.currentPlayer === playerId);
+    setGameStatus(newGameState.status || "playing");
+};
+
+const handleCellClick = (row, col) => {
+    if (
+        !isMyTurn ||
+        !gameplayClientRef.current ||
+        !gameplayClientRef.current.connected
+    ) {
+        return;
+    }
+
+    // Check if cell is already attacked
+    if (enemyGrid[row][col] !== "") {
+        return;
+    }
+
+    const attackPayload = {
+        sessionId: sessionId,
+        attackerId: playerId,
+        x: row,
+        y: col,
+    };
+
+    gameplayClientRef.current.send(
+        "/app/gameplay/attack",
+        {},
+        JSON.stringify(attackPayload)
+    );
+    console.log("Sent attack payload:", attackPayload);
 };
 
 export default App;
