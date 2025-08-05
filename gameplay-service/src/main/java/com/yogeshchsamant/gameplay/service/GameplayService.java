@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yogeshchsamant.gameplay.model.AttackPayload;
 import com.yogeshchsamant.gameplay.model.Cell;
 import com.yogeshchsamant.gameplay.model.EndGamePayload;
@@ -48,6 +49,9 @@ public class GameplayService {
         // create grid
         Grid grid1 = new Grid();
         Grid grid2 = new Grid();
+
+        grid1.fillCells();
+        grid2.fillCells();
 
         // convert DTO to gameplay model by creating the gameplay players
         Player player1 = new Player(

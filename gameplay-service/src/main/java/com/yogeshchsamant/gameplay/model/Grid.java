@@ -3,10 +3,20 @@ package com.yogeshchsamant.gameplay.model;
 import java.io.Serializable;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.yogeshchsamant.gameplay.service.GameplayService;
+
 import lombok.Data;
 
 @Data
 public class Grid implements Serializable {
+
+    @JsonIgnore
+    Logger logger = LoggerFactory.getLogger(GameplayService.class);
+
     private static final long serialVersionUID = 1L;
     private List<List<Cell>> grid = new ArrayList<List<Cell>>();
     private int defences;
@@ -37,6 +47,24 @@ public class Grid implements Serializable {
         cell2.get().setHasBase(true);
 
         setDefences(2);
+    }
+
+    public void fillCells() {
+        int cellsFilled = 0;
+        Random r = new Random();
+
+        while (cellsFilled < 10) {
+            int i = r.nextInt(10);
+            int j = r.nextInt(10);
+
+            if (!getCell(i, j).get().isHasBase()) {
+                logger.info("(" + i + ", " + j + ") has been filled.");
+                this.getCell(i, j).get().setHasBase(true);
+                cellsFilled += 1;
+            }
+        }
+        logger.info("Cells filled.");
+
     }
 
     public Optional<Cell> getCell(int i, int j) {
