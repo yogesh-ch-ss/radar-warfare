@@ -10,7 +10,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yogeshchsamant.gameplay.model.AttackPayload;
 import com.yogeshchsamant.gameplay.model.Cell;
 import com.yogeshchsamant.gameplay.model.EndGamePayload;
@@ -84,6 +83,9 @@ public class GameplayService {
             String message = "Game already initialized for sessionId: " + sessionId;
             logger.info(message);
         }
+
+        // Notify both players via STOMP
+        messagingTemplate.convertAndSend("/subscribe/game/" + sessionId, matchInfo);
 
     }
 
