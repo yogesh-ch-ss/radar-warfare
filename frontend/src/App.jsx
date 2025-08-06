@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import RulesPage from "./pages/RulesPage";
 import MatchmakingPage from "./pages/MatchmakingPage";
+import GameLobbyPage from "./pages/GameLobbyPage";
 import GameplayPage from "./pages/GameplayPage";
 
 const App = () => {
@@ -74,7 +75,7 @@ const App = () => {
                         // Connect to gameplay
                         connectToGameplay(matchInfo);
 
-                        // Navigate to gameplay
+                        // Navigate to game lobby
                         setCurrentPage("gameplay");
                     });
 
@@ -132,6 +133,7 @@ const App = () => {
 
                         // Auto-navigate to gameplay when game state is received
                         if (currentPage === "lobby") {
+                            console.log("Navigating from lobby to gameplay");
                             setCurrentPage("gameplay");
                         }
                     });
@@ -146,13 +148,20 @@ const App = () => {
                         handleDisconnect();
                     });
 
+                    console.log(
+                        "Subscribed to game topics:",
+                        gameTopic,
+                        endGameTopic
+                    );
+
                     gameplayClient.send(
                         "/app/gameplay/init",
                         {},
                         JSON.stringify(matchInfo)
                     );
                     console.log(
-                        "Sent MatchInfoDTO to gameplay-service for init"
+                        "Sent MatchInfoDTO to gameplay-service for init:",
+                        matchInfo
                     );
                 },
                 (error) => {

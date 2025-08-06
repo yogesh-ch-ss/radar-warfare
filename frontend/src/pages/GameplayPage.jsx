@@ -43,7 +43,13 @@ const GameplayPage = ({
             ? gameState.player2
             : gameState.player1;
 
-    const isMyTurn = currentPlayer.isTurn;
+    // Handle both possible field names from backend
+    const isMyTurn = currentPlayer.turn || currentPlayer.isTurn;
+
+    console.log("Current player:", currentPlayer.playerId);
+    console.log("Is my turn:", isMyTurn);
+    console.log("Player turn field:", currentPlayer.turn);
+    console.log("Player isTurn field:", currentPlayer.isTurn);
 
     // Handle cell click for attacking opponent's grid
     const handleCellClick = (x, y) => {
