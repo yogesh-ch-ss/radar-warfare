@@ -43,13 +43,11 @@ const GameplayPage = ({
             ? gameState.player2
             : gameState.player1;
 
-    // Handle both possible field names from backend
-    const isMyTurn = currentPlayer.turn || currentPlayer.isTurn;
+    // Use the correct field name from backend
+    const isMyTurn = currentPlayer.turn;
 
     console.log("Current player:", currentPlayer.playerId);
     console.log("Is my turn:", isMyTurn);
-    console.log("Player turn field:", currentPlayer.turn);
-    console.log("Player isTurn field:", currentPlayer.isTurn);
 
     // Handle cell click for attacking opponent's grid
     const handleCellClick = (x, y) => {
@@ -60,7 +58,7 @@ const GameplayPage = ({
 
         // Check if cell is already attacked
         const opponentCell = opponent.grid.grid[x][y];
-        if (opponentCell.isHit) {
+        if (opponentCell.hit) {
             alert("Cell already attacked!");
             return;
         }
@@ -84,7 +82,7 @@ const GameplayPage = ({
 
                             if (isOpponentGrid) {
                                 // For opponent's grid: show only hits/misses, not bases
-                                if (cell.isHit) {
+                                if (cell.hit) {
                                     if (cell.hasBase) {
                                         cellClass += " bg-red-600 text-white"; // Hit with base
                                         cellContent = "X";
@@ -101,7 +99,7 @@ const GameplayPage = ({
                             } else {
                                 // For own grid: show bases and hits
                                 if (cell.hasBase) {
-                                    if (cell.isHit) {
+                                    if (cell.hit) {
                                         cellClass += " bg-red-600 text-white"; // Own base hit
                                         cellContent = "X";
                                     } else {
@@ -110,7 +108,7 @@ const GameplayPage = ({
                                         cellContent = "B";
                                     }
                                 } else {
-                                    if (cell.isHit) {
+                                    if (cell.hit) {
                                         cellClass +=
                                             " bg-zinc-700 text-green-300"; // Empty cell hit
                                         cellContent = "•";

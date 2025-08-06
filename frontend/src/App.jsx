@@ -4,7 +4,6 @@ import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import RulesPage from "./pages/RulesPage";
 import MatchmakingPage from "./pages/MatchmakingPage";
-import GameLobbyPage from "./pages/GameLobbyPage";
 import GameplayPage from "./pages/GameplayPage";
 
 const App = () => {
@@ -130,12 +129,6 @@ const App = () => {
                             gameStateUpdate
                         );
                         setGameState(gameStateUpdate);
-
-                        // Auto-navigate to gameplay when game state is received
-                        if (currentPage === "lobby") {
-                            console.log("Navigating from lobby to gameplay");
-                            setCurrentPage("gameplay");
-                        }
                     });
 
                     // Subscribe to end game notifications
@@ -154,15 +147,18 @@ const App = () => {
                         endGameTopic
                     );
 
-                    gameplayClient.send(
-                        "/app/gameplay/init",
-                        {},
-                        JSON.stringify(matchInfo)
-                    );
-                    console.log(
-                        "Sent MatchInfoDTO to gameplay-service for init:",
-                        matchInfo
-                    );
+                    // Small delay to ensure subscription is established before sending init
+                    setTimeout(() => {
+                        gameplayClient.send(
+                            "/app/gameplay/init",
+                            {},
+                            JSON.stringify(matchInfo)
+                        );
+                        console.log(
+                            "Sent MatchInfoDTO to gameplay-service for init:",
+                            matchInfo
+                        );
+                    }, 100);
                 },
                 (error) => {
                     console.error("Gameplay connection error:", error);
