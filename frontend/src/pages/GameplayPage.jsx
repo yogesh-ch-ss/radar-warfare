@@ -9,6 +9,14 @@ const GameplayPage = ({
     onAttack,
     onDisconnect,
 }) => {
+    const rules = [
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+    ];
+
     if (!gameState) {
         return (
             <div className="min-h-screen bg-zinc-950 text-green-500 flex flex-col">
@@ -20,7 +28,7 @@ const GameplayPage = ({
                                 Loading Game...
                             </h2>
                             <div className="flex justify-center">
-                                <span className="relative flex size-10">
+                                <span className="relative flex size-10 align-middle justify-center items-center">
                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
                                     <span className="relative inline-flex size-1 rounded-full bg-green-500"></span>
                                 </span>
@@ -165,12 +173,6 @@ const GameplayPage = ({
                                 </span>
                             </div>
                             <div>
-                                <span className="text-green-400">vs</span>
-                                <span className="text-green-500 ml-2">
-                                    {opponentId}
-                                </span>
-                            </div>
-                            <div>
                                 <span
                                     className={`${
                                         isMyTurn
@@ -178,7 +180,9 @@ const GameplayPage = ({
                                             : "text-red-400"
                                     } font-bold`}
                                 >
-                                    {isMyTurn ? "YOUR TURN" : "OPPONENT'S TURN"}
+                                    {isMyTurn
+                                        ? "     YOUR TURN"
+                                        : "OPPONENT'S TURN"}
                                 </span>
                             </div>
                         </div>
@@ -206,7 +210,7 @@ const GameplayPage = ({
                         <h3 className="font-mono text-sm font-bold text-green-400 mb-2">
                             LEGEND
                         </h3>
-                        <div className="grid grid-cols-2 gap-4 font-mono text-xs">
+                        <div className="grid grid-cols-2 gap-4 font-mono text-xs border-b border-green-600 pb-4">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
                                     <div className="w-4 h-4 bg-green-600 border border-green-600"></div>
@@ -231,6 +235,16 @@ const GameplayPage = ({
                                     <span>Unknown</span>
                                 </div>
                             </div>
+                        </div>
+                        <h3 className="font-mono text-sm font-bold text-green-400 my-2">
+                            RULES
+                        </h3>
+                        <div className="bg-zinc-950 p-2">
+                            <ul className="font-mono text-sm leading-relaxed">
+                                {rules.map((rule, index) => (
+                                    <li key={index}>• {rule}</li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
 

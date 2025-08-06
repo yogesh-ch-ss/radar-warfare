@@ -137,7 +137,11 @@ const App = () => {
                     gameplayClient.subscribe(endGameTopic, (message) => {
                         const endGamePayload = JSON.parse(message.body);
                         console.log("Game Ended:", endGamePayload);
-                        alert(`Game Over! Winner: ${endGamePayload.winnerId}`);
+                        const winStatus =
+                            endGamePayload.winnerId === playerId
+                                ? "YOU WIN!"
+                                : "YOU LOSE!";
+                        alert(`Game Over! ${winStatus}`);
                         handleDisconnect();
                     });
 
@@ -158,7 +162,7 @@ const App = () => {
                             "Sent MatchInfoDTO to gameplay-service for init:",
                             matchInfo
                         );
-                    }, 100);
+                    }, 3000);
                 },
                 (error) => {
                     console.error("Gameplay connection error:", error);
