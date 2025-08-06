@@ -12,26 +12,20 @@ const App = () => {
     const [sessionId, setSessionId] = useState("");
     const [opponentId, setOpponentId] = useState("");
     const [connectionStatus, setConnectionStatus] = useState("disconnected");
-
     const [gameState, setGameState] = useState(null);
-    const [myGrid, setMyGrid] = useState(
-        Array(10)
-            .fill()
-            .map(() => Array(10).fill(""))
-    );
-    const [enemyGrid, setEnemyGrid] = useState(
-        Array(10)
-            .fill()
-            .map(() => Array(10).fill(""))
-    );
-    const [isMyTurn, setIsMyTurn] = useState(false);
-    const [gameStatus, setGameStatus] = useState("waiting");
-    const [myDefences, setMyDefences] = useState(10);
-    const [enemyDefences, setEnemyDefences] = useState(10);
 
     // WebSocket client references
     const matchmakingClientRef = useRef(null);
     const gameplayClientRef = useRef(null);
+
+    const generatePlayerId = () => {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let result = "";
+        for (let i = 0; i < 10; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    };
 
     // Navigation function
     const handleNavigate = (page) => {
@@ -49,6 +43,7 @@ const App = () => {
     // Connect to matchmaking WebSocket
     const connectToMatchmaking = (playerIdToUse) => {
         try {
+            // Import SockJS and Stomp from CDN (these would need to be added to your HTML)
             const socket = new window.SockJS("http://localhost:8081/ws");
             const client = window.Stomp.over(socket);
 
@@ -69,14 +64,17 @@ const App = () => {
                         );
 
                         setSessionId(matchInfo.sessionID);
+                        // Determine opponent ID
                         const opponent =
                             matchInfo.player1ID === playerIdToUse
                                 ? matchInfo.player2ID
                                 : matchInfo.player1ID;
                         setOpponentId(opponent);
 
-                        // Connect to gameplay and go directly to game
+                        // Connect to gameplay
                         connectToGameplay(matchInfo);
+
+                        // Navigate to gameplay
                         setCurrentPage("gameplay");
                     });
 
@@ -125,21 +123,27 @@ const App = () => {
 
                     const gameTopic = "/subscribe/game/" + matchInfo.sessionID;
                     gameplayClient.subscribe(gameTopic, (message) => {
-                        const newGameState = JSON.parse(message.body);
+                        const gameStateUpdate = JSON.parse(message.body);
                         console.log(
                             "Game State Update Received:",
-                            newGameState
+                            gameStateUpdate
                         );
-                        handleGameStateUpdate(newGameState);
+                        setGameState(gameStateUpdate);
+
+                        // Auto-navigate to gameplay when game state is received
+                        if (currentPage === "lobby") {
+                            setCurrentPage("gameplay");
+                        }
                     });
 
-                    // Subscribe to game end messages
-                    const gameEndTopic =
+                    // Subscribe to end game notifications
+                    const endGameTopic =
                         "/subscribe/game/" + matchInfo.sessionID + "/end";
-                    gameplayClient.subscribe(gameEndTopic, (message) => {
-                        const endGameData = JSON.parse(message.body);
-                        console.log("Game ended:", endGameData);
-                        handleGameEnd(endGameData);
+                    gameplayClient.subscribe(endGameTopic, (message) => {
+                        const endGamePayload = JSON.parse(message.body);
+                        console.log("Game Ended:", endGamePayload);
+                        alert(`Game Over! Winner: ${endGamePayload.winnerId}`);
+                        handleDisconnect();
                     });
 
                     gameplayClient.send(
@@ -156,6 +160,7 @@ const App = () => {
                 }
             );
 
+            // Detect WebSocket closure
             gameplayClient.ws.onclose = () => {
                 console.warn("Gameplay WebSocket disconnected.");
                 setConnectionStatus("disconnected");
@@ -165,125 +170,32 @@ const App = () => {
         }
     };
 
-    // Handle game state updates from backend
-    const handleGameStateUpdate = (matchInfo) => {
-        console.log("Processing MatchInfo:", matchInfo);
-        setGameState(matchInfo);
+    // Send attack function
+    const handleAttack = (x, y) => {
+        if (gameplayClientRef.current && gameplayClientRef.current.connected) {
+            const attackPayload = {
+                sessionId: sessionId,
+                attackerId: playerId,
+                x: x,
+                y: y,
+            };
 
-        // Determine which player is me and which is opponent
-        let myPlayer, enemyPlayer;
-        if (matchInfo.player1.playerId === playerId) {
-            myPlayer = matchInfo.player1;
-            enemyPlayer = matchInfo.player2;
-        } else {
-            myPlayer = matchInfo.player2;
-            enemyPlayer = matchInfo.player1;
+            gameplayClientRef.current.send(
+                "/app/gameplay/attack",
+                {},
+                JSON.stringify(attackPayload)
+            );
+            console.log("Sent attack payload:", attackPayload);
         }
-
-        // Update my grid - show my own bases and hits
-        const newMyGrid = Array(10)
-            .fill()
-            .map(() => Array(10).fill(""));
-        if (myPlayer.grid && myPlayer.grid.grid) {
-            myPlayer.grid.grid.forEach((row, rowIndex) => {
-                row.forEach((cell, colIndex) => {
-                    if (cell.hasBase && cell.isHit) {
-                        newMyGrid[rowIndex][colIndex] = "hit"; // My base was hit
-                    } else if (cell.hasBase) {
-                        newMyGrid[rowIndex][colIndex] = "ship"; // My unhit base
-                    } else if (cell.isHit) {
-                        newMyGrid[rowIndex][colIndex] = "miss"; // Empty cell was hit
-                    }
-                });
-            });
-        }
-        setMyGrid(newMyGrid);
-
-        // Update enemy grid - only show what I've discovered
-        const newEnemyGrid = Array(10)
-            .fill()
-            .map(() => Array(10).fill(""));
-        if (enemyPlayer.grid && enemyPlayer.grid.grid) {
-            enemyPlayer.grid.grid.forEach((row, rowIndex) => {
-                row.forEach((cell, colIndex) => {
-                    if (cell.isHit) {
-                        if (cell.hasBase) {
-                            newEnemyGrid[rowIndex][colIndex] = "hit"; // Enemy base hit
-                        } else {
-                            newEnemyGrid[rowIndex][colIndex] = "miss"; // Empty cell hit
-                        }
-                    }
-                    // Don't show enemy bases that haven't been hit
-                });
-            });
-        }
-        setEnemyGrid(newEnemyGrid);
-
-        // Update turn status
-        setIsMyTurn(myPlayer.isTurn);
-
-        // Update defences
-        setMyDefences(myPlayer.grid?.defences || 10);
-        setEnemyDefences(enemyPlayer.grid?.defences || 10);
-
-        // Update game status
-        setGameStatus("playing");
-    };
-
-    // Handle game end
-    const handleGameEnd = (endGameData) => {
-        console.log("Game ended. Winner:", endGameData.winnerId);
-
-        if (endGameData.winnerId === playerId) {
-            setGameStatus("won");
-            alert("Congratulations! You won!");
-        } else {
-            setGameStatus("lost");
-            alert("Game Over! You lost.");
-        }
-
-        // Auto-navigate back to home after a short delay
-        setTimeout(() => {
-            handleCancelMatchmaking();
-            setCurrentPage("home");
-        }, 3000);
-    };
-
-    // Handle cell click for attacks
-    const handleCellClick = (row, col) => {
-        if (
-            !isMyTurn ||
-            !gameplayClientRef.current ||
-            !gameplayClientRef.current.connected ||
-            gameStatus !== "playing"
-        ) {
-            console.log("Cannot attack - not your turn or game not active");
-            return;
-        }
-
-        // Check if cell is already attacked
-        if (enemyGrid[row][col] !== "") {
-            console.log("Cell already attacked");
-            return;
-        }
-
-        const attackPayload = {
-            sessionId: sessionId,
-            attackerId: playerId,
-            x: row,
-            y: col,
-        };
-
-        gameplayClientRef.current.send(
-            "/app/gameplay/attack",
-            {},
-            JSON.stringify(attackPayload)
-        );
-        console.log("Sent attack payload:", attackPayload);
     };
 
     // Cancel matchmaking
     const handleCancelMatchmaking = () => {
+        handleDisconnect();
+    };
+
+    // Disconnect function
+    const handleDisconnect = () => {
         // Disconnect from matchmaking
         if (
             matchmakingClientRef.current &&
@@ -307,20 +219,6 @@ const App = () => {
         setSessionId("");
         setOpponentId("");
         setGameState(null);
-        setMyGrid(
-            Array(10)
-                .fill()
-                .map(() => Array(10).fill(""))
-        );
-        setEnemyGrid(
-            Array(10)
-                .fill()
-                .map(() => Array(10).fill(""))
-        );
-        setIsMyTurn(false);
-        setGameStatus("waiting");
-        setMyDefences(10);
-        setEnemyDefences(10);
 
         // Navigate back to home
         setCurrentPage("home");
@@ -365,21 +263,12 @@ const App = () => {
             case "gameplay":
                 return (
                     <GameplayPage
-                        onNavigate={handleNavigate}
                         playerId={playerId}
-                        opponentId={opponentId}
                         sessionId={sessionId}
-                        myGrid={myGrid}
-                        enemyGrid={enemyGrid}
-                        isMyTurn={isMyTurn}
-                        gameStatus={gameStatus}
-                        myDefences={myDefences}
-                        enemyDefences={enemyDefences}
-                        onCellClick={handleCellClick}
-                        onEndGame={() => {
-                            handleCancelMatchmaking();
-                            setCurrentPage("home");
-                        }}
+                        opponentId={opponentId}
+                        gameState={gameState}
+                        onAttack={handleAttack}
+                        onDisconnect={handleDisconnect}
                     />
                 );
             case "rules":
@@ -397,15 +286,6 @@ const App = () => {
     };
 
     return <div className="App">{renderCurrentPage()}</div>;
-};
-
-const generatePlayerId = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let result = "";
-    for (let i = 0; i < 10; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
 };
 
 export default App;

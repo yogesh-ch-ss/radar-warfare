@@ -79,13 +79,12 @@ public class GameplayService {
         if (sessionKeyPresentOnRedis) {
             String message = "Game initialized successfully for sessionId: " + sessionId;
             logger.info(message);
+            // Notify both players via STOMP
+            messagingTemplate.convertAndSend("/subscribe/game/" + sessionId, matchInfo);
         } else {
             String message = "Game already initialized for sessionId: " + sessionId;
             logger.info(message);
         }
-
-        // Notify both players via STOMP
-        messagingTemplate.convertAndSend("/subscribe/game/" + sessionId, matchInfo);
 
     }
 
