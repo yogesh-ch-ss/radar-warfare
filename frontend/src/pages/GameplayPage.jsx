@@ -1,3 +1,4 @@
+import React from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -6,8 +7,10 @@ const GameplayPage = ({
     sessionId,
     opponentId,
     gameState,
+    gameStatus,
     onAttack,
     onDisconnect,
+    connectionStatus,
 }) => {
     const rules = [
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
@@ -56,9 +59,31 @@ const GameplayPage = ({
 
     console.log("Current player:", currentPlayer.playerId);
     console.log("Is my turn:", isMyTurn);
+    console.log("Game status:", gameStatus);
 
     // Handle cell click for attacking opponent's grid
     const handleCellClick = (x, y) => {
+        // Check game status
+        if (gameStatus === "session_expired") {
+            alert("Game session expired! Please start a new game.");
+            onDisconnect();
+            return;
+        }
+
+        if (gameStatus === "opponent_disconnected") {
+            alert(
+                "Your opponent has disconnected! Waiting for reconnection..."
+            );
+            return;
+        }
+
+        // Check connection status
+        if (connectionStatus === "disconnected") {
+            alert("Connection lost! Please reconnect.");
+            onDisconnect();
+            return;
+        }
+
         if (!isMyTurn) {
             alert("It's not your turn!");
             return;
@@ -73,6 +98,34 @@ const GameplayPage = ({
 
         onAttack(x, y);
     };
+
+    // Get status display info
+    const getStatusDisplay = () => {
+        if (gameStatus === "session_expired") {
+            return {
+                text: "SESSION EXPIRED",
+                className: "text-red-400 font-bold animate-pulse",
+            };
+        }
+        if (gameStatus === "opponent_disconnected") {
+            return {
+                text: "OPPONENT DISCONNECTED",
+                className: "text-yellow-400 font-bold animate-pulse",
+            };
+        }
+        if (connectionStatus === "disconnected") {
+            return {
+                text: "CONNECTION LOST",
+                className: "text-red-400 font-bold animate-pulse",
+            };
+        }
+        return {
+            text: isMyTurn ? "YOUR TURN" : "OPPONENT'S TURN",
+            className: isMyTurn ? "text-green-400" : "text-red-400",
+        };
+    };
+
+    const statusDisplay = getStatusDisplay();
 
     // Render a single grid
     const renderGrid = (grid, isOpponentGrid = false, title) => {
@@ -127,6 +180,12 @@ const GameplayPage = ({
                                 }
                             }
 
+                            const canClick =
+                                isOpponentGrid &&
+                                isMyTurn &&
+                                connectionStatus === "connected" &&
+                                gameStatus === "active";
+
                             return (
                                 <div
                                     key={`${x}-${y}`}
@@ -137,10 +196,17 @@ const GameplayPage = ({
                                             : undefined
                                     }
                                     style={{
-                                        cursor:
-                                            isOpponentGrid && isMyTurn
-                                                ? "pointer"
-                                                : "default",
+                                        cursor: canClick
+                                            ? "pointer"
+                                            : "default",
+                                        opacity:
+                                            connectionStatus ===
+                                                "disconnected" ||
+                                            gameStatus === "session_expired" ||
+                                            gameStatus ===
+                                                "opponent_disconnected"
+                                                ? 0.5
+                                                : 1,
                                     }}
                                 >
                                     {cellContent}
@@ -174,19 +240,66 @@ const GameplayPage = ({
                             </div>
                             <div>
                                 <span
-                                    className={`${
-                                        isMyTurn
-                                            ? "text-green-400"
-                                            : "text-red-400"
-                                    } font-bold`}
+                                    className={`${statusDisplay.className} font-bold`}
                                 >
-                                    {isMyTurn
-                                        ? "     YOUR TURN"
-                                        : "OPPONENT'S TURN"}
+                                    {statusDisplay.text}
+                                </span>
+                            </div>
+                        </div>
+                        {/* Heartbeat status indicator */}
+                        <div className="mt-2 flex justify-between items-center font-mono text-xs">
+                            <div>
+                                <span className="text-green-400">
+                                    Connection:
+                                </span>
+                                <span
+                                    className={`ml-2 ${
+                                        connectionStatus === "connected"
+                                            ? "text-green-500"
+                                            : "text-red-400"
+                                    }`}
+                                >
+                                    {connectionStatus.toUpperCase()}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-green-400">
+                                    Game Status:
+                                </span>
+                                <span
+                                    className={`ml-2 ${
+                                        gameStatus === "active"
+                                            ? "text-green-500"
+                                            : gameStatus ===
+                                                "opponent_disconnected"
+                                            ? "text-yellow-400"
+                                            : "text-red-400"
+                                    }`}
+                                >
+                                    {gameStatus.replace("_", " ").toUpperCase()}
                                 </span>
                             </div>
                         </div>
                     </div>
+
+                    {/* Status Warning */}
+                    {(gameStatus === "session_expired" ||
+                        gameStatus === "opponent_disconnected" ||
+                        connectionStatus === "disconnected") && (
+                        <div className="border border-red-600 bg-red-900/20 p-4 mb-4">
+                            <p className="font-mono text-sm text-red-400 text-center">
+                                ⚠️{" "}
+                                {gameStatus === "session_expired"
+                                    ? "Game session expired"
+                                    : gameStatus === "opponent_disconnected"
+                                    ? "Opponent disconnected - waiting for reconnection"
+                                    : "Connection lost"}
+                                {gameStatus === "session_expired"
+                                    ? "! Please disconnect and start a new game."
+                                    : ""}
+                            </p>
+                        </div>
+                    )}
 
                     {/* Grids */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
@@ -200,7 +313,14 @@ const GameplayPage = ({
                             {renderGrid(
                                 opponent.grid,
                                 true,
-                                "OPPONENT'S GRID - CLICK TO ATTACK"
+                                gameStatus === "session_expired"
+                                    ? "OPPONENT'S GRID - SESSION EXPIRED"
+                                    : gameStatus === "opponent_disconnected"
+                                    ? "OPPONENT'S GRID - OPPONENT DISCONNECTED"
+                                    : connectionStatus === "connected" &&
+                                        gameStatus === "active"
+                                    ? "OPPONENT'S GRID - CLICK TO ATTACK"
+                                    : "OPPONENT'S GRID - DISCONNECTED"
                             )}
                         </div>
                     </div>
@@ -225,9 +345,7 @@ const GameplayPage = ({
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-4 h-4 bg-zinc-700 border border-green-600 flex items-center justify-center text-green-300">
-                                        •
-                                    </div>
+                                    <div className="w-4 h-4 bg-zinc-700 border border-green-600 flex items-center justify-center text-green-300"></div>
                                     <span>Miss</span>
                                 </div>
                                 <div className="flex items-center gap-2">

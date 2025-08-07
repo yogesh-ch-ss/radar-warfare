@@ -8,6 +8,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
 import com.yogeshchsamant.gameplay.model.AttackPayload;
+import com.yogeshchsamant.gameplay.model.HeartbeatPayload;
 import com.yogeshchsamant.gameplay.model.MatchInfoDTO;
 import com.yogeshchsamant.gameplay.service.GameplayService;
 
@@ -36,6 +37,15 @@ public class GameplayController {
             // e.printStackTrace();
             logger.error(e.toString());
             logger.error(e.getStackTrace().toString());
+        }
+    }
+
+    @MessageMapping("/gameplay/heartbeat")
+    public void handleHeartbeat(@Payload HeartbeatPayload heartbeatPayload) {
+        try {
+            gameplayService.processHeartbeat(heartbeatPayload);
+        } catch (Exception e) {
+            logger.error("Heartbeat error: " + e.toString());
         }
     }
 

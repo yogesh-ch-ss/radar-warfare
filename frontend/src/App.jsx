@@ -13,10 +13,12 @@ const App = () => {
     const [opponentId, setOpponentId] = useState("");
     const [connectionStatus, setConnectionStatus] = useState("disconnected");
     const [gameState, setGameState] = useState(null);
+    const [gameStatus, setGameStatus] = useState("active"); // "active", "opponent_disconnected", "session_expired"
 
     // WebSocket client references
     const matchmakingClientRef = useRef(null);
     const gameplayClientRef = useRef(null);
+    const heartbeatIntervalRef = useRef(null);
 
     const generatePlayerId = () => {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -40,10 +42,46 @@ const App = () => {
         setCurrentPage("matchmaking");
     };
 
+    // Start heartbeat mechanism
+    const startHeartbeat = (playerIdToUse, sessionIdToUse) => {
+        // Clear any existing heartbeat
+        if (heartbeatIntervalRef.current) {
+            clearInterval(heartbeatIntervalRef.current);
+        }
+
+        heartbeatIntervalRef.current = setInterval(() => {
+            if (
+                gameplayClientRef.current &&
+                gameplayClientRef.current.connected
+            ) {
+                const heartbeatPayload = {
+                    sessionId: sessionIdToUse,
+                    playerId: playerIdToUse,
+                    timestamp: Date.now(),
+                };
+
+                gameplayClientRef.current.send(
+                    "/app/gameplay/heartbeat",
+                    {},
+                    JSON.stringify(heartbeatPayload)
+                );
+                console.log("Heartbeat sent:", heartbeatPayload);
+            }
+        }, 10000); // Send heartbeat every 10 seconds
+    };
+
+    // Stop heartbeat mechanism
+    const stopHeartbeat = () => {
+        if (heartbeatIntervalRef.current) {
+            clearInterval(heartbeatIntervalRef.current);
+            heartbeatIntervalRef.current = null;
+            console.log("Heartbeat stopped");
+        }
+    };
+
     // Connect to matchmaking WebSocket
     const connectToMatchmaking = (playerIdToUse) => {
         try {
-            // Import SockJS and Stomp from CDN (these would need to be added to your HTML)
             const socket = new window.SockJS("http://localhost:8081/ws");
             const client = window.Stomp.over(socket);
 
@@ -64,7 +102,6 @@ const App = () => {
                         );
 
                         setSessionId(matchInfo.sessionID);
-                        // Determine opponent ID
                         const opponent =
                             matchInfo.player1ID === playerIdToUse
                                 ? matchInfo.player2ID
@@ -72,7 +109,7 @@ const App = () => {
                         setOpponentId(opponent);
 
                         // Connect to gameplay
-                        connectToGameplay(matchInfo);
+                        connectToGameplay(matchInfo, playerIdToUse);
 
                         // Navigate to game lobby
                         setCurrentPage("gameplay");
@@ -107,7 +144,7 @@ const App = () => {
     };
 
     // Connect to gameplay WebSocket
-    const connectToGameplay = (matchInfo) => {
+    const connectToGameplay = (matchInfo, playerIdToUse) => {
         try {
             const gameplaySocket = new window.SockJS(
                 "http://localhost:8082/gameplay-ws"
@@ -131,16 +168,46 @@ const App = () => {
                         setGameState(gameStateUpdate);
                     });
 
+                    // Subscribe to heartbeat responses
+                    const heartbeatTopic =
+                        "/subscribe/game/" +
+                        matchInfo.sessionID +
+                        "/heartbeat/" +
+                        playerIdToUse;
+                    gameplayClient.subscribe(heartbeatTopic, (message) => {
+                        const heartbeatResponse = JSON.parse(message.body);
+                        console.log("Heartbeat response:", heartbeatResponse);
+
+                        if (heartbeatResponse.status === "session_active") {
+                            setGameStatus("active");
+                        } else if (
+                            heartbeatResponse.status === "opponent_disconnected"
+                        ) {
+                            setGameStatus("opponent_disconnected");
+                        } else if (
+                            heartbeatResponse.status === "session_expired"
+                        ) {
+                            setGameStatus("session_expired");
+                            alert("Game session expired! Disconnecting...");
+                            handleDisconnect();
+                        }
+                    });
+
                     // Subscribe to end game notifications
                     const endGameTopic =
                         "/subscribe/game/" + matchInfo.sessionID + "/end";
                     gameplayClient.subscribe(endGameTopic, (message) => {
                         const endGamePayload = JSON.parse(message.body);
                         console.log("Game Ended:", endGamePayload);
-                        const winStatus =
-                            endGamePayload.winnerId === playerId
-                                ? "YOU WIN!"
-                                : "YOU LOSE!";
+
+                        let winStatus = "GAME OVER!";
+                        if (endGamePayload.winnerId) {
+                            winStatus =
+                                endGamePayload.winnerId === playerId
+                                    ? "YOU WIN!"
+                                    : "YOU LOSE!";
+                        }
+
                         alert(`Game Over! ${winStatus}`);
                         handleDisconnect();
                     });
@@ -148,6 +215,7 @@ const App = () => {
                     console.log(
                         "Subscribed to game topics:",
                         gameTopic,
+                        heartbeatTopic,
                         endGameTopic
                     );
 
@@ -162,6 +230,9 @@ const App = () => {
                             "Sent MatchInfoDTO to gameplay-service for init:",
                             matchInfo
                         );
+
+                        // Start heartbeat after game initialization
+                        startHeartbeat(playerIdToUse, matchInfo.sessionID);
                     }, 3000);
                 },
                 (error) => {
@@ -173,6 +244,13 @@ const App = () => {
             gameplayClient.ws.onclose = () => {
                 console.warn("Gameplay WebSocket disconnected.");
                 setConnectionStatus("disconnected");
+                stopHeartbeat();
+
+                // If we're in gameplay and connection is lost, show alert and disconnect
+                if (currentPage === "gameplay") {
+                    alert("Connection lost! Game disconnected.");
+                    handleDisconnect();
+                }
             };
         } catch (error) {
             console.error("Failed to connect to gameplay:", error);
@@ -181,6 +259,18 @@ const App = () => {
 
     // Send attack function
     const handleAttack = (x, y) => {
+        // Check game status first
+        if (gameStatus === "session_expired") {
+            alert("Game session expired! Please start a new game.");
+            handleDisconnect();
+            return;
+        }
+
+        if (gameStatus === "opponent_disconnected") {
+            alert("Your opponent has disconnected! Game will end soon.");
+            return;
+        }
+
         if (gameplayClientRef.current && gameplayClientRef.current.connected) {
             const attackPayload = {
                 sessionId: sessionId,
@@ -195,6 +285,10 @@ const App = () => {
                 JSON.stringify(attackPayload)
             );
             console.log("Sent attack payload:", attackPayload);
+        } else {
+            // Connection lost during gameplay
+            alert("Connection lost! Please reconnect.");
+            handleDisconnect();
         }
     };
 
@@ -205,6 +299,9 @@ const App = () => {
 
     // Disconnect function
     const handleDisconnect = () => {
+        // Stop heartbeat
+        stopHeartbeat();
+
         // Disconnect from matchmaking
         if (
             matchmakingClientRef.current &&
@@ -228,6 +325,7 @@ const App = () => {
         setSessionId("");
         setOpponentId("");
         setGameState(null);
+        setGameStatus("active");
 
         // Navigate back to home
         setCurrentPage("home");
@@ -236,6 +334,7 @@ const App = () => {
     // Cleanup on unmount
     useEffect(() => {
         return () => {
+            stopHeartbeat();
             if (
                 matchmakingClientRef.current &&
                 matchmakingClientRef.current.connected
@@ -276,8 +375,10 @@ const App = () => {
                         sessionId={sessionId}
                         opponentId={opponentId}
                         gameState={gameState}
+                        gameStatus={gameStatus}
                         onAttack={handleAttack}
                         onDisconnect={handleDisconnect}
+                        connectionStatus={connectionStatus}
                     />
                 );
             case "rules":

@@ -14,9 +14,12 @@ import com.yogeshchsamant.gameplay.model.AttackPayload;
 import com.yogeshchsamant.gameplay.model.Cell;
 import com.yogeshchsamant.gameplay.model.EndGamePayload;
 import com.yogeshchsamant.gameplay.model.Grid;
+import com.yogeshchsamant.gameplay.model.HeartbeatPayload;
+import com.yogeshchsamant.gameplay.model.HeartbeatResponse;
 import com.yogeshchsamant.gameplay.model.MatchInfo;
 import com.yogeshchsamant.gameplay.model.MatchInfoDTO;
 import com.yogeshchsamant.gameplay.model.Player;
+import com.yogeshchsamant.gameplay.model.SessionExpiredPayload;
 
 @Component
 public class GameplayService {
@@ -94,6 +97,11 @@ public class GameplayService {
         MatchInfo matchInfo = (MatchInfo) redisTemplate.opsForValue().get("game:" + attackPayload.getSessionId());
 
         if (matchInfo == null) {
+            SessionExpiredPayload sessionExpiredPayload = new SessionExpiredPayload(attackPayload.getSessionId());
+            messagingTemplate.convertAndSend("/subscribe/game/" + attackPayload.getSessionId() + "/expired",
+                    sessionExpiredPayload);
+            logger.warn("Session expired for sessionId: " + attackPayload.getSessionId());
+
             throw new IllegalStateException("Session expired or does not exist: " + attackPayload.getSessionId());
         }
 
@@ -203,6 +211,65 @@ public class GameplayService {
         EndGamePayload endGamePayload = new EndGamePayload(sessionId, winnerId);
         messagingTemplate.convertAndSend("/subscribe/game/" + sessionId + "/end", endGamePayload);
 
+    }
+
+    public void processHeartbeat(HeartbeatPayload heartbeatPayload) {
+        String sessionId = heartbeatPayload.getSessionId();
+        String playerId = heartbeatPayload.getPlayerId();
+        long currentTime = System.currentTimeMillis();
+
+        // Check if game session exists
+        MatchInfo matchInfo = (MatchInfo) redisTemplate.opsForValue().get("game:" + sessionId);
+
+        if (matchInfo == null) {
+            // Session expired - notify client
+            HeartbeatResponse response = new HeartbeatResponse("session_expired", sessionId, currentTime);
+            messagingTemplate.convertAndSend("/subscribe/game/" + sessionId + "/heartbeat/" + playerId, response);
+            logger.info("Heartbeat: Session expired for " + sessionId);
+            return;
+        }
+
+        // Store heartbeat timestamp for this player
+        String heartbeatKey = "heartbeat:" + sessionId + ":" + playerId;
+        redisTemplate.opsForValue().set(heartbeatKey, currentTime, Duration.ofSeconds(20));
+
+        // Get both player IDs
+        String player1Id = matchInfo.getPlayer1().getPlayerId();
+        String player2Id = matchInfo.getPlayer2().getPlayerId();
+
+        // Check heartbeats from both players
+        String heartbeatKey1 = "heartbeat:" + sessionId + ":" + player1Id;
+        String heartbeatKey2 = "heartbeat:" + sessionId + ":" + player2Id;
+
+        Long player1Heartbeat = (Long) redisTemplate.opsForValue().get(heartbeatKey1);
+        Long player2Heartbeat = (Long) redisTemplate.opsForValue().get(heartbeatKey2);
+
+        // Check if both players have recent heartbeats (within last 15 seconds)
+        boolean player1Active = player1Heartbeat != null && (currentTime - player1Heartbeat) <= 15000;
+        boolean player2Active = player2Heartbeat != null && (currentTime - player2Heartbeat) <= 15000;
+
+        HeartbeatResponse response;
+
+        if (player1Active && player2Active) {
+            // Both players active
+            response = new HeartbeatResponse("session_active", sessionId, currentTime);
+            // Send to both players
+            messagingTemplate.convertAndSend("/subscribe/game/" + sessionId + "/heartbeat/" + player1Id, response);
+            messagingTemplate.convertAndSend("/subscribe/game/" + sessionId + "/heartbeat/" + player2Id, response);
+            logger.debug("Heartbeat: Both players active in " + sessionId);
+        } else {
+            // One player disconnected
+            response = new HeartbeatResponse("opponent_disconnected", sessionId, currentTime);
+            // Send only to the active player
+            if (player1Active) {
+                messagingTemplate.convertAndSend("/subscribe/game/" + sessionId + "/heartbeat/" + player1Id, response);
+                logger.info("Heartbeat: Player2 disconnected from " + sessionId);
+            }
+            if (player2Active) {
+                messagingTemplate.convertAndSend("/subscribe/game/" + sessionId + "/heartbeat/" + player2Id, response);
+                logger.info("Heartbeat: Player1 disconnected from " + sessionId);
+            }
+        }
     }
 
 }
