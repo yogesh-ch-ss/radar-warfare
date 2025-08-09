@@ -19,7 +19,6 @@ import com.yogeshchsamant.gameplay.model.HeartbeatResponse;
 import com.yogeshchsamant.gameplay.model.MatchInfo;
 import com.yogeshchsamant.gameplay.model.MatchInfoDTO;
 import com.yogeshchsamant.gameplay.model.Player;
-import com.yogeshchsamant.gameplay.model.SessionExpiredPayload;
 
 @Component
 public class GameplayService {
@@ -39,14 +38,6 @@ public class GameplayService {
 
         String sessionId = matchinfoDTO.getSessionID();
         String sessionKeyForRedis = "game:" + sessionId;
-
-        // if (redisTemplate.hasKey(sessionKeyForRedis)) {
-        // // the sessionKeyForRedis already exists in redis since gameInit would have
-        // been
-        // // called by the other client
-        // System.out.println("Game already initialized for sessionId: " + sessionId);
-        // return;
-        // }
 
         // create grid
         Grid grid1 = new Grid();
@@ -97,11 +88,6 @@ public class GameplayService {
         MatchInfo matchInfo = (MatchInfo) redisTemplate.opsForValue().get("game:" + attackPayload.getSessionId());
 
         if (matchInfo == null) {
-            SessionExpiredPayload sessionExpiredPayload = new SessionExpiredPayload(attackPayload.getSessionId());
-            messagingTemplate.convertAndSend("/subscribe/game/" + attackPayload.getSessionId() + "/expired",
-                    sessionExpiredPayload);
-            logger.warn("Session expired for sessionId: " + attackPayload.getSessionId());
-
             throw new IllegalStateException("Session expired or does not exist: " + attackPayload.getSessionId());
         }
 

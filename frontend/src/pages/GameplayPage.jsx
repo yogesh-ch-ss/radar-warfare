@@ -271,7 +271,7 @@ const GameplayPage = ({
                                         gameStatus === "active"
                                             ? "text-green-500"
                                             : gameStatus ===
-                                                "opponent_disconnected"
+                                              "opponent_disconnected"
                                             ? "text-yellow-400"
                                             : "text-red-400"
                                     }`}
@@ -318,7 +318,7 @@ const GameplayPage = ({
                                     : gameStatus === "opponent_disconnected"
                                     ? "OPPONENT'S GRID - OPPONENT DISCONNECTED"
                                     : connectionStatus === "connected" &&
-                                        gameStatus === "active"
+                                      gameStatus === "active"
                                     ? "OPPONENT'S GRID - CLICK TO ATTACK"
                                     : "OPPONENT'S GRID - DISCONNECTED"
                             )}
@@ -345,7 +345,9 @@ const GameplayPage = ({
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-4 h-4 bg-zinc-700 border border-green-600 flex items-center justify-center text-green-300"></div>
+                                    <div className="w-4 h-4 bg-zinc-700 border border-green-600 flex items-center justify-center text-green-300">
+                                        •
+                                    </div>
                                     <span>Miss</span>
                                 </div>
                                 <div className="flex items-center gap-2">
