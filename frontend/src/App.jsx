@@ -79,6 +79,22 @@ const App = () => {
         }
     };
 
+    // Leave matchmaking queue
+    const leaveMatchmakingQueue = (playerIdToUse) => {
+        if (
+            matchmakingClientRef.current &&
+            matchmakingClientRef.current.connected
+        ) {
+            const leavePayload = { playerId: playerIdToUse };
+            matchmakingClientRef.current.send(
+                "/app/matchmaking/leave",
+                {},
+                JSON.stringify(leavePayload)
+            );
+            console.log("Sent matchmaking leave request for:", playerIdToUse);
+        }
+    };
+
     // Connect to matchmaking WebSocket
     const connectToMatchmaking = (playerIdToUse) => {
         try {
@@ -294,6 +310,11 @@ const App = () => {
 
     // Cancel matchmaking
     const handleCancelMatchmaking = () => {
+        // Send leave request to remove player from matchmaking queue
+        if (playerId) {
+            leaveMatchmakingQueue(playerId);
+        }
+        // Then disconnect
         handleDisconnect();
     };
 
@@ -334,6 +355,11 @@ const App = () => {
     // Cleanup on unmount
     useEffect(() => {
         return () => {
+            // Send leave request if we have a playerId and are in matchmaking
+            if (playerId && currentPage === "matchmaking") {
+                leaveMatchmakingQueue(playerId);
+            }
+
             stopHeartbeat();
             if (
                 matchmakingClientRef.current &&

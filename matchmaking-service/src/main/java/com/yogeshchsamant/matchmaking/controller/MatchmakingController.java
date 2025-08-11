@@ -24,4 +24,13 @@ public class MatchmakingController {
         }
     }
 
+    @MessageMapping("matchmaking/leave")
+    public void handlePlayerLeave(Player player) {
+        try {
+            matchmakingService.dequePlayerById(player.getPlayerId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

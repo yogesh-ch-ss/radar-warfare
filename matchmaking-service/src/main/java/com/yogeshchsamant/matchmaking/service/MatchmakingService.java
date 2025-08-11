@@ -1,5 +1,6 @@
 package com.yogeshchsamant.matchmaking.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,8 @@ public class MatchmakingService {
     }
 
     public void enquePlayer(Player player) throws JsonProcessingException {
-        // System.out.println("Redis connection factory: " + redisTemplate.getConnectionFactory());
+        // System.out.println("Redis connection factory: " +
+        // redisTemplate.getConnectionFactory());
         redisTemplate.opsForList().rightPush("matchmaking:queue", player);
         System.out.println("Player enqueued: " + player.getPlayerId());
         tryMatchingPlayers();
@@ -76,5 +78,36 @@ public class MatchmakingService {
             }
 
         }
+    }
+
+    public boolean dequePlayerById(String playerId) {
+        // Get all players in the queue
+        List<Object> queuePlayers = redisTemplate.opsForList().range("matchmaking:queue", 0, -1);
+
+        if (queuePlayers == null || queuePlayers.isEmpty()) {
+            System.out.println("Queue is empty, player " + playerId + " not found for removal");
+            return false;
+        }
+
+        // Find and remove the specific player
+        for (Object playerObj : queuePlayers) {
+            if (playerObj instanceof Player) {
+                Player player = (Player) playerObj;
+                if (player.getPlayerId().equals(playerId)) {
+                    // Remove this specific player from the queue
+                    Long removedCount = redisTemplate.opsForList().remove("matchmaking:queue", 1, player);
+                    if (removedCount > 0) {
+                        System.out.println("Player removed from queue: " + playerId);
+                        return true;
+                    } else {
+                        System.out.println("Failed to remove player from queue: " + playerId);
+                        return false;
+                    }
+                }
+            }
+        }
+
+        System.out.println("Player not found in queue for removal: " + playerId);
+        return false;
     }
 }
