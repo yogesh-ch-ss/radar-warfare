@@ -28,7 +28,7 @@ public class Grid implements Serializable {
         for (int i = 0; i < 10; i++) {
             List<Cell> row = new ArrayList<>();
             for (int j = 0; j < 10; j++) {
-                row.add(new Cell(i, j, false, false));
+                row.add(new Cell(i, j, false, false, 0));
             }
             this.grid.add(row);
         }
@@ -50,6 +50,11 @@ public class Grid implements Serializable {
     }
 
     public void fillCells() {
+        this.fillCells_bases();
+        this.fillCells_numbers();
+    }
+
+    public void fillCells_bases() {
         int cellsFilled = 0;
         Random r = new Random();
 
@@ -63,8 +68,30 @@ public class Grid implements Serializable {
                 cellsFilled += 1;
             }
         }
-        logger.info("Cells filled.");
+        logger.info("Cells filled with bases.");
+    }
 
+    public void fillCells_numbers() {
+        // to be called after fillCells_bases()
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                Optional<Cell> cell = this.getCell(i, j);
+                cell.get().setNumber(this.calculateNumber(i, j));
+            }
+        }
+        logger.info("Cells filled with numbers.");
+    }
+
+    public int calculateNumber(int r, int c) {
+        int n = 0;
+        for (int i = r - 1; i <= r + 1; i++) {
+            for (int j = c - 1; j <= c + 1; j++) {
+                if (i > -1 && i < 10 && j > -1 && j < 10 && i != r && i != c && this.getCell(i, j).get().isHasBase()) {
+                    n += 1;
+                }
+            }
+        }
+        return n;
     }
 
     public Optional<Cell> getCell(int i, int j) {
