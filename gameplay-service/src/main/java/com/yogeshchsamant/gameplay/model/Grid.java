@@ -84,9 +84,12 @@ public class Grid implements Serializable {
 
     public int calculateNumber(int r, int c) {
         int n = 0;
+        if (this.getCell(r, c).get().isHasBase()) {
+            return 0;
+        }
         for (int i = r - 1; i <= r + 1; i++) {
             for (int j = c - 1; j <= c + 1; j++) {
-                if (i > -1 && i < 10 && j > -1 && j < 10 && i != r && i != c && this.getCell(i, j).get().isHasBase()) {
+                if (i > -1 && i < 10 && j > -1 && j < 10 && this.getCell(i, j).get().isHasBase()) {
                     n += 1;
                 }
             }

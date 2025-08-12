@@ -148,9 +148,17 @@ const GameplayPage = ({
                                         cellClass += " bg-red-600 text-white"; // Hit with base
                                         cellContent = "X";
                                     } else {
-                                        cellClass +=
-                                            " bg-zinc-700 text-green-300"; // Miss
-                                        cellContent = "•";
+                                        // Check if cell has a number > 0
+                                        if (cell.number && cell.number > 0) {
+                                            cellClass +=
+                                                " bg-yellow-600 text-zinc-950 font-bold"; // Hit with number
+                                            cellContent =
+                                                cell.number.toString();
+                                        } else {
+                                            cellClass +=
+                                                " bg-zinc-700 text-green-300"; // Miss (number = 0 or no number)
+                                            cellContent = "•";
+                                        }
                                     }
                                 } else {
                                     cellClass +=
@@ -158,7 +166,7 @@ const GameplayPage = ({
                                     cellContent = "";
                                 }
                             } else {
-                                // For own grid: show bases and hits
+                                // For own grid: show bases, numbers, and hits
                                 if (cell.hasBase) {
                                     if (cell.hit) {
                                         cellClass += " bg-red-600 text-white"; // Own base hit
@@ -170,12 +178,28 @@ const GameplayPage = ({
                                     }
                                 } else {
                                     if (cell.hit) {
-                                        cellClass +=
-                                            " bg-zinc-700 text-green-300"; // Empty cell hit
-                                        cellContent = "•";
+                                        // Cell is hit - show number if > 0, otherwise show dot
+                                        if (cell.number && cell.number > 0) {
+                                            cellClass +=
+                                                " bg-yellow-600 text-zinc-950 font-bold"; // Own cell hit with number
+                                            cellContent =
+                                                cell.number.toString();
+                                        } else {
+                                            cellClass +=
+                                                " bg-zinc-700 text-green-300"; // Own empty cell hit
+                                            cellContent = "•";
+                                        }
                                     } else {
-                                        cellClass += " bg-zinc-950"; // Empty cell safe
-                                        cellContent = "";
+                                        // Cell is not hit - show number if > 0, otherwise empty
+                                        if (cell.number && cell.number > 0) {
+                                            cellClass +=
+                                                " bg-zinc-950 text-green-500"; // Show number
+                                            cellContent =
+                                                cell.number.toString();
+                                        } else {
+                                            cellClass += " bg-zinc-950"; // Empty cell (number = 0 or no number)
+                                            cellContent = "";
+                                        }
                                     }
                                 }
                             }
@@ -333,14 +357,22 @@ const GameplayPage = ({
                         <div className="grid grid-cols-2 gap-4 font-mono text-xs border-b border-green-600 pb-4">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-4 h-4 bg-green-600 border border-green-600"></div>
+                                    <div className="w-4 h-4 bg-green-600 border border-green-600 flex items-center justify-center text-zinc-950 text-xs font-bold">
+                                        B
+                                    </div>
                                     <span>Your Base</span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 mb-1">
                                     <div className="w-4 h-4 bg-red-600 border border-green-600 flex items-center justify-center text-white text-xs">
                                         X
                                     </div>
                                     <span>Hit Base</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 bg-yellow-600 border border-green-600 flex items-center justify-center text-zinc-950 text-xs font-bold">
+                                        #
+                                    </div>
+                                    <span>Number (adjacent bases)</span>
                                 </div>
                             </div>
                             <div>
@@ -350,9 +382,15 @@ const GameplayPage = ({
                                     </div>
                                     <span>Miss</span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 mb-1">
                                     <div className="w-4 h-4 bg-zinc-950 border border-green-600"></div>
-                                    <span>Unknown</span>
+                                    <span>Unknown/Empty</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 bg-zinc-950 border border-green-600 flex items-center justify-center text-green-500 text-xs">
+                                        #
+                                    </div>
+                                    <span>Your numbers (visible)</span>
                                 </div>
                             </div>
                         </div>

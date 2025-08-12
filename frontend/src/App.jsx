@@ -92,6 +92,16 @@ const App = () => {
                 JSON.stringify(leavePayload)
             );
             console.log("Sent matchmaking leave request for:", playerIdToUse);
+
+            // Small delay to ensure the message is sent before disconnecting
+            setTimeout(() => {
+                handleDisconnect();
+            }, 100);
+        } else {
+            console.warn(
+                "Matchmaking client not connected, disconnecting directly"
+            );
+            handleDisconnect();
         }
     };
 
@@ -308,17 +318,20 @@ const App = () => {
         }
     };
 
-    // Cancel matchmaking
+    // Cancel matchmaking - this will be called from MatchmakingPage
     const handleCancelMatchmaking = () => {
+        console.log("Handling matchmaking cancellation for:", playerId);
+
         // Send leave request to remove player from matchmaking queue
         if (playerId) {
             leaveMatchmakingQueue(playerId);
+        } else {
+            // If no playerId, just disconnect
+            handleDisconnect();
         }
-        // Then disconnect
-        handleDisconnect();
     };
 
-    // Disconnect function
+    // Disconnect function (clean disconnection without sending leave message)
     const handleDisconnect = () => {
         // Stop heartbeat
         stopHeartbeat();
@@ -392,6 +405,7 @@ const App = () => {
                         onNavigate={handleNavigate}
                         playerId={playerId}
                         onCancel={handleCancelMatchmaking}
+                        connectionStatus={connectionStatus}
                     />
                 );
             case "gameplay":
