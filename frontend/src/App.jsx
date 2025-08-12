@@ -229,7 +229,7 @@ const App = () => {
                         let winStatus = "GAME OVER!";
                         if (endGamePayload.winnerId) {
                             winStatus =
-                                endGamePayload.winnerId === playerId
+                                endGamePayload.winnerId === playerIdToUse
                                     ? "YOU WIN!"
                                     : "YOU LOSE!";
                         }
