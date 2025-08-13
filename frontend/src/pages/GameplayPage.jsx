@@ -13,11 +13,11 @@ const GameplayPage = ({
     connectionStatus,
 }) => {
     const rules = [
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "AIM: Destroy all enemy defence bases.",
+        "WINNER: First to eliminate all enemy bases.",
+        "Click a cell to attack.",
+        "Hit a base: enemy loses the base.",
+        "Hit an empty cell: show the count of nearby bases.",
     ];
 
     if (!gameState) {
@@ -241,7 +241,7 @@ const GameplayPage = ({
                 </div>
                 <div className="mt-2 text-center">
                     <p className="font-mono text-xs text-green-400">
-                        Defenses: {grid.defences}/10
+                        Defences: {grid.defences}/10
                     </p>
                 </div>
             </div>
@@ -257,10 +257,12 @@ const GameplayPage = ({
                     <div className="border border-green-600 bg-zinc-900 p-4 mb-4">
                         <div className="flex justify-between items-center font-mono text-sm">
                             <div>
-                                <span className="text-green-400">Session:</span>
-                                <span className="text-green-500 ml-2">
-                                    {sessionId}
+                                <span className="text-green-400">
+                                    Session Established
                                 </span>
+                                {/* <span className="text-green-500 ml-2">
+                                    {sessionId}
+                                </span> */}
                             </div>
                             <div>
                                 <span
@@ -312,7 +314,7 @@ const GameplayPage = ({
                         connectionStatus === "disconnected") && (
                         <div className="border border-red-600 bg-red-900/20 p-4 mb-4">
                             <p className="font-mono text-sm text-red-400 text-center">
-                                ⚠️{" "}
+                                !!!{" "}
                                 {gameStatus === "session_expired"
                                     ? "Game session expired"
                                     : gameStatus === "opponent_disconnected"
@@ -372,7 +374,7 @@ const GameplayPage = ({
                                     <div className="w-4 h-4 bg-yellow-600 border border-green-600 flex items-center justify-center text-zinc-950 text-xs font-bold">
                                         #
                                     </div>
-                                    <span>Number (adjacent bases)</span>
+                                    <span>Adjacent enemy bases</span>
                                 </div>
                             </div>
                             <div>
@@ -400,7 +402,7 @@ const GameplayPage = ({
                         <div className="bg-zinc-950 p-2">
                             <ul className="font-mono text-sm leading-relaxed">
                                 {rules.map((rule, index) => (
-                                    <li key={index}>• {rule}</li>
+                                    <li key={index}>- {rule}</li>
                                 ))}
                             </ul>
                         </div>

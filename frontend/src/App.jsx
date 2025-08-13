@@ -188,8 +188,7 @@ const App = () => {
                     gameplayClient.subscribe(gameTopic, (message) => {
                         const gameStateUpdate = JSON.parse(message.body);
                         console.log(
-                            "Game State Update Received:",
-                            gameStateUpdate
+                            "Game State Update Received"
                         );
                         setGameState(gameStateUpdate);
                     });

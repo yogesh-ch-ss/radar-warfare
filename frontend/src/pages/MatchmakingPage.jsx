@@ -60,11 +60,11 @@ const MatchmakingPage = ({
                         <h2 className="text-xl font-mono font-bold text-center mb-4">
                             Finding Match...
                         </h2>
-                        <div className="bg-zinc-950 border border-green-600 p-3 mb-4 w-full">
+                        {/* <div className="bg-zinc-950 border border-green-600 p-3 mb-4 w-full">
                             <p className="font-mono text-xs text-center text-green-400">
                                 PLAYER ID: {playerId}
                             </p>
-                        </div>
+                        </div> */}
 
                         {/* Connection Status */}
                         <div className="bg-zinc-950 border border-green-600 p-3 mb-4 w-full">
@@ -116,10 +116,10 @@ const MatchmakingPage = ({
                         </p>
 
                         {/* Show timeout warning when less than 30 seconds left */}
-                        {timeRemaining <= 30 && timeRemaining > 0 && (
+                        {timeRemaining <= 10 && timeRemaining > 0 && (
                             <div className="border border-yellow-600 bg-yellow-900/20 p-3 mb-4 w-full">
                                 <p className="font-mono text-xs text-center text-yellow-400">
-                                    ⚠️ NO MATCH FOUND - DISCONNECTING SOON
+                                    !!! NO MATCH FOUND - DISCONNECTING SOON
                                 </p>
                             </div>
                         )}
@@ -128,7 +128,7 @@ const MatchmakingPage = ({
                         {timeRemaining <= 0 && (
                             <div className="border border-red-600 bg-red-900/20 p-3 mb-4 w-full">
                                 <p className="font-mono text-xs text-center text-red-400">
-                                    ⚠️ TIMEOUT - NO OPPONENTS FOUND
+                                    !!! TIMEOUT - NO OPPONENTS FOUND
                                 </p>
                             </div>
                         )}
