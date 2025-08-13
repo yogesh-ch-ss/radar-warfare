@@ -65,7 +65,7 @@ const App = () => {
                     {},
                     JSON.stringify(heartbeatPayload)
                 );
-                console.log("Heartbeat sent:", heartbeatPayload);
+                // Removed detailed heartbeat logging
             }
         }, 10000); // Send heartbeat every 10 seconds
     };
@@ -75,7 +75,6 @@ const App = () => {
         if (heartbeatIntervalRef.current) {
             clearInterval(heartbeatIntervalRef.current);
             heartbeatIntervalRef.current = null;
-            console.log("Heartbeat stopped");
         }
     };
 
@@ -91,16 +90,12 @@ const App = () => {
                 {},
                 JSON.stringify(leavePayload)
             );
-            console.log("Sent matchmaking leave request for:", playerIdToUse);
 
             // Small delay to ensure the message is sent before disconnecting
             setTimeout(() => {
                 handleDisconnect();
             }, 100);
         } else {
-            console.warn(
-                "Matchmaking client not connected, disconnecting directly"
-            );
             handleDisconnect();
         }
     };
@@ -116,16 +111,13 @@ const App = () => {
             client.connect(
                 {},
                 (frame) => {
-                    console.log("Connected to Matchmaking: " + frame);
+                    console.log("Connected to Matchmaking");
                     setConnectionStatus("connected");
 
                     const subscribePath = "/subscribe/match/" + playerIdToUse;
                     client.subscribe(subscribePath, (message) => {
                         const matchInfo = JSON.parse(message.body);
-                        console.log(
-                            "MATCHED!!! MatchInfoDTO received:",
-                            matchInfo
-                        );
+                        console.log("Match found! Connecting to game...");
 
                         setSessionId(matchInfo.sessionID);
                         const opponent =
@@ -141,11 +133,6 @@ const App = () => {
                         setCurrentPage("gameplay");
                     });
 
-                    console.log(
-                        "Subscribed to matchmaking topic:",
-                        subscribePath
-                    );
-
                     // Automatically join matchmaking
                     const payload = { playerId: playerIdToUse };
                     client.send(
@@ -153,10 +140,7 @@ const App = () => {
                         {},
                         JSON.stringify(payload)
                     );
-                    console.log(
-                        "Sent matchmaking join request for:",
-                        playerIdToUse
-                    );
+                    console.log("Joined matchmaking queue");
                 },
                 (error) => {
                     console.error("Matchmaking connection error:", error);
@@ -182,14 +166,13 @@ const App = () => {
             gameplayClient.connect(
                 {},
                 (frame) => {
-                    console.log("Connected to Gameplay: " + frame);
+                    console.log("Connected to Gameplay");
 
                     const gameTopic = "/subscribe/game/" + matchInfo.sessionID;
                     gameplayClient.subscribe(gameTopic, (message) => {
                         const gameStateUpdate = JSON.parse(message.body);
-                        console.log(
-                            "Game State Update Received"
-                        );
+                        // Simplified logging - only log essential info
+                        console.log("Game state updated");
                         setGameState(gameStateUpdate);
                     });
 
@@ -201,7 +184,6 @@ const App = () => {
                         playerIdToUse;
                     gameplayClient.subscribe(heartbeatTopic, (message) => {
                         const heartbeatResponse = JSON.parse(message.body);
-                        console.log("Heartbeat response:", heartbeatResponse);
 
                         if (heartbeatResponse.status === "session_active") {
                             setGameStatus("active");
@@ -223,7 +205,7 @@ const App = () => {
                         "/subscribe/game/" + matchInfo.sessionID + "/end";
                     gameplayClient.subscribe(endGameTopic, (message) => {
                         const endGamePayload = JSON.parse(message.body);
-                        console.log("Game Ended:", endGamePayload);
+                        console.log("Game ended");
 
                         let winStatus = "GAME OVER!";
                         if (endGamePayload.winnerId) {
@@ -237,13 +219,6 @@ const App = () => {
                         handleDisconnect();
                     });
 
-                    console.log(
-                        "Subscribed to game topics:",
-                        gameTopic,
-                        heartbeatTopic,
-                        endGameTopic
-                    );
-
                     // Small delay to ensure subscription is established before sending init
                     setTimeout(() => {
                         gameplayClient.send(
@@ -251,10 +226,7 @@ const App = () => {
                             {},
                             JSON.stringify(matchInfo)
                         );
-                        console.log(
-                            "Sent MatchInfoDTO to gameplay-service for init:",
-                            matchInfo
-                        );
+                        console.log("Game initialized");
 
                         // Start heartbeat after game initialization
                         startHeartbeat(playerIdToUse, matchInfo.sessionID);
@@ -267,7 +239,7 @@ const App = () => {
 
             // Detect WebSocket closure
             gameplayClient.ws.onclose = () => {
-                console.warn("Gameplay WebSocket disconnected.");
+                console.warn("Gameplay WebSocket disconnected");
                 setConnectionStatus("disconnected");
                 stopHeartbeat();
 
@@ -309,7 +281,7 @@ const App = () => {
                 {},
                 JSON.stringify(attackPayload)
             );
-            console.log("Sent attack payload:", attackPayload);
+            console.log("Attack sent");
         } else {
             // Connection lost during gameplay
             alert("Connection lost! Please reconnect.");
@@ -319,8 +291,6 @@ const App = () => {
 
     // Cancel matchmaking - this will be called from MatchmakingPage
     const handleCancelMatchmaking = () => {
-        console.log("Handling matchmaking cancellation for:", playerId);
-
         // Send leave request to remove player from matchmaking queue
         if (playerId) {
             leaveMatchmakingQueue(playerId);

@@ -8,6 +8,7 @@ const RulesPage = ({ onNavigate }) => {
         "Click a cell to attack.",
         "Hit a base: enemy loses the base.",
         "Hit an empty cell: show the count of nearby bases.",
+        "TIP: make your attack strategy based on the numbers."
     ];
 
     return (
@@ -32,7 +33,7 @@ const RulesPage = ({ onNavigate }) => {
                             onClick={() => onNavigate("home")}
                             className="bg-green-500 text-zinc-950 font-mono font-bold py-2 px-6 border border-green-600 hover:bg-zinc-900 hover:text-green-500 transition-colors"
                         >
-                            Go Back
+                            Back to Home
                         </button>
                     </div>
                 </div>

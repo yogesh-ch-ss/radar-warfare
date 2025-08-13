@@ -119,7 +119,7 @@ const MatchmakingPage = ({
                         {timeRemaining <= 10 && timeRemaining > 0 && (
                             <div className="border border-yellow-600 bg-yellow-900/20 p-3 mb-4 w-full">
                                 <p className="font-mono text-xs text-center text-yellow-400">
-                                    !!! NO MATCH FOUND - DISCONNECTING SOON
+                                    !!! NO MATCH FOUND - DISCONNECTING SOON !!!
                                 </p>
                             </div>
                         )}
@@ -128,7 +128,7 @@ const MatchmakingPage = ({
                         {timeRemaining <= 0 && (
                             <div className="border border-red-600 bg-red-900/20 p-3 mb-4 w-full">
                                 <p className="font-mono text-xs text-center text-red-400">
-                                    !!! TIMEOUT - NO OPPONENTS FOUND
+                                    !!! TIMEOUT - NO OPPONENTS FOUND !!!
                                 </p>
                             </div>
                         )}

@@ -18,6 +18,7 @@ const GameplayPage = ({
         "Click a cell to attack.",
         "Hit a base: enemy loses the base.",
         "Hit an empty cell: show the count of nearby bases.",
+        "TIP: make your attack strategy based on the numbers.",
     ];
 
     if (!gameState) {
@@ -241,7 +242,7 @@ const GameplayPage = ({
                 </div>
                 <div className="mt-2 text-center">
                     <p className="font-mono text-xs text-green-400">
-                        Defences: {grid.defences}/10
+                        Remaining Defences: {grid.defences}/10
                     </p>
                 </div>
             </div>
@@ -322,7 +323,8 @@ const GameplayPage = ({
                                     : "Connection lost"}
                                 {gameStatus === "session_expired"
                                     ? "! Please disconnect and start a new game."
-                                    : ""}
+                                    : ""}{" "}
+                                !!!
                             </p>
                         </div>
                     )}
