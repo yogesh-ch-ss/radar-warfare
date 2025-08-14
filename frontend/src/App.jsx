@@ -94,7 +94,7 @@ const App = () => {
             // Small delay to ensure the message is sent before disconnecting
             setTimeout(() => {
                 handleDisconnect();
-            }, 100);
+            }, 500);
         } else {
             handleDisconnect();
         }
@@ -195,8 +195,11 @@ const App = () => {
                             heartbeatResponse.status === "session_expired"
                         ) {
                             setGameStatus("session_expired");
-                            alert("Game session expired! Disconnecting...");
-                            handleDisconnect();
+                            // Add delay before showing alert to allow UI to update
+                            setTimeout(() => {
+                                alert("Game session expired! Disconnecting...");
+                                handleDisconnect();
+                            }, 500);
                         }
                     });
 
@@ -215,8 +218,11 @@ const App = () => {
                                     : "YOU LOSE!";
                         }
 
-                        alert(`Game Over! ${winStatus}`);
-                        handleDisconnect();
+                        // Add delay before showing alert to allow UI to update
+                        setTimeout(() => {
+                            alert(`Game Over! ${winStatus}`);
+                            handleDisconnect();
+                        }, 1000);
                     });
 
                     // Small delay to ensure subscription is established before sending init
@@ -245,8 +251,11 @@ const App = () => {
 
                 // If we're in gameplay and connection is lost, show alert and disconnect
                 if (currentPage === "gameplay") {
-                    alert("Connection lost! Game disconnected.");
-                    handleDisconnect();
+                    // Add delay before showing alert to allow UI to update
+                    setTimeout(() => {
+                        alert("Connection lost! Game disconnected.");
+                        handleDisconnect();
+                    }, 500);
                 }
             };
         } catch (error) {

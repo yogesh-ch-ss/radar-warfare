@@ -20,7 +20,10 @@ const MatchmakingPage = ({
                     // Only trigger timeout if we haven't already triggered it
                     if (!timeoutTriggered) {
                         setTimeoutTriggered(true);
-                        handleTimeout();
+                        // Add delay before showing alert to allow UI to update
+                        setTimeout(() => {
+                            handleTimeout();
+                        }, 500);
                     }
                     return 0;
                 }
@@ -60,11 +63,6 @@ const MatchmakingPage = ({
                         <h2 className="text-xl font-mono font-bold text-center mb-4">
                             Finding Match...
                         </h2>
-                        {/* <div className="bg-zinc-950 border border-green-600 p-3 mb-4 w-full">
-                            <p className="font-mono text-xs text-center text-green-400">
-                                PLAYER ID: {playerId}
-                            </p>
-                        </div> */}
 
                         {/* Connection Status */}
                         <div className="bg-zinc-950 border border-green-600 p-3 mb-4 w-full">
