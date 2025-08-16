@@ -16,8 +16,9 @@ const GameplayPage = ({
         "AIM: Destroy all enemy defence bases.",
         "WINNER: First to eliminate all enemy bases.",
         "Click a cell to attack.",
-        "Hit a base: enemy loses the base.",
-        "Hit an empty cell: show the count of nearby bases.",
+        "Hit a base - enemy loses the base.",
+        "Hit an empty cell - show the count of nearby bases.",
+        "TIP: strategise attacks based on the numbers.",
     ];
 
     if (!gameState) {
@@ -307,8 +308,8 @@ const GameplayPage = ({
                                     : "Connection lost"}
                                 {gameStatus === "session_expired"
                                     ? "! Please disconnect and start a new game."
-                                    : ""}
-                                {" "}!!!
+                                    : ""}{" "}
+                                !!!
                             </p>
                         </div>
                     )}
@@ -383,7 +384,7 @@ const GameplayPage = ({
                         <div className="bg-zinc-950 p-2">
                             <ul className="font-mono text-sm leading-relaxed">
                                 {rules.map((rule, index) => (
-                                    <li key={index}>- {rule}</li>
+                                    <li key={index}>{"> "} {rule}</li>
                                 ))}
                             </ul>
                         </div>

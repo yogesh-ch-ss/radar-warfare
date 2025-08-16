@@ -6,9 +6,9 @@ const RulesPage = ({ onNavigate }) => {
         "AIM: Destroy all enemy defence bases.",
         "WINNER: First to eliminate all enemy bases.",
         "Click a cell to attack.",
-        "Hit a base: enemy loses the base.",
-        "Hit an empty cell: show the count of nearby bases.",
-        "TIP: make your attack strategy based on the numbers."
+        "Hit a base - enemy loses the base.",
+        "Hit an empty cell - show the count of nearby bases.",
+        "TIP: strategise attacks based on the numbers."
     ];
 
     return (
@@ -24,7 +24,7 @@ const RulesPage = ({ onNavigate }) => {
                     <div className="bg-zinc-950 p-6 border-b border-green-600">
                         <ul className="font-mono text-sm leading-relaxed space-y-2">
                             {rules.map((rule, index) => (
-                                <li key={index}>- {rule}</li>
+                                <li key={index}>{"> "} {rule}</li>
                             ))}
                         </ul>
                     </div>
