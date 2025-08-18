@@ -14,6 +14,7 @@ services:
           - key: REDIS_HOST
             fromService:
                 name: rw-redis
+                type: redis
                 property: host
           - key: PORT
             value: 8081
@@ -28,6 +29,7 @@ services:
           - key: REDIS_HOST
             fromService:
                 name: rw-redis
+                type: redis
                 property: host
           - key: PORT
             value: 8082
