@@ -7,8 +7,8 @@ const RulesPage = ({ onNavigate }) => {
         "WINNER: First to eliminate all enemy bases.",
         "Click a cell to attack.",
         "Hit a base - enemy loses the base.",
-        "Hit an empty cell - show the count of nearby bases.",
-        "TIP: strategise attacks based on the numbers."
+        "Hit an empty cell - show the count of nearby enemy bases.",
+        "TIP: strategise attacks based on the count of nearby enemy bases."
     ];
 
     return (
