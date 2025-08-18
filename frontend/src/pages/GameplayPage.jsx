@@ -13,11 +13,12 @@ const GameplayPage = ({
     connectionStatus,
 }) => {
     const rules = [
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "AIM: Destroy all enemy defence bases.",
+        "WINNER: First to eliminate all enemy bases.",
+        "Click a cell to attack.",
+        "Hit a base - enemy loses the base.",
+        "Hit an empty cell - show the count of nearby enemy bases.",
+        "TIP: strategise attacks based on the count of nearby enemy bases.",
     ];
 
     if (!gameState) {
@@ -56,10 +57,6 @@ const GameplayPage = ({
 
     // Use the correct field name from backend
     const isMyTurn = currentPlayer.turn;
-
-    console.log("Current player:", currentPlayer.playerId);
-    console.log("Is my turn:", isMyTurn);
-    console.log("Game status:", gameStatus);
 
     // Handle cell click for attacking opponent's grid
     const handleCellClick = (x, y) => {
@@ -142,40 +139,59 @@ const GameplayPage = ({
                             let cellContent = "";
 
                             if (isOpponentGrid) {
-                                // For opponent's grid: show only hits/misses, not bases
                                 if (cell.hit) {
                                     if (cell.hasBase) {
-                                        cellClass += " bg-red-600 text-white"; // Hit with base
+                                        cellClass += " bg-red-600 text-white";
                                         cellContent = "X";
                                     } else {
-                                        cellClass +=
-                                            " bg-zinc-700 text-green-300"; // Miss
-                                        cellContent = "•";
+                                        if (cell.number && cell.number > 0) {
+                                            cellClass +=
+                                                " bg-yellow-600 text-zinc-950 font-bold";
+                                            cellContent =
+                                                cell.number.toString();
+                                        } else {
+                                            cellClass +=
+                                                " bg-zinc-700 text-green-300";
+                                            cellContent = "•";
+                                        }
                                     }
                                 } else {
                                     cellClass +=
-                                        " bg-zinc-950 hover:bg-zinc-800"; // Unexplored
+                                        " bg-zinc-950 hover:bg-zinc-800";
                                     cellContent = "";
                                 }
                             } else {
-                                // For own grid: show bases and hits
                                 if (cell.hasBase) {
                                     if (cell.hit) {
-                                        cellClass += " bg-red-600 text-white"; // Own base hit
+                                        cellClass += " bg-red-600 text-white";
                                         cellContent = "X";
                                     } else {
                                         cellClass +=
-                                            " bg-green-600 text-zinc-950"; // Own base safe
+                                            " bg-green-600 text-zinc-950";
                                         cellContent = "B";
                                     }
                                 } else {
                                     if (cell.hit) {
-                                        cellClass +=
-                                            " bg-zinc-700 text-green-300"; // Empty cell hit
-                                        cellContent = "•";
+                                        if (cell.number && cell.number > 0) {
+                                            cellClass +=
+                                                " bg-yellow-600 text-zinc-950 font-bold";
+                                            cellContent =
+                                                cell.number.toString();
+                                        } else {
+                                            cellClass +=
+                                                " bg-zinc-700 text-green-300";
+                                            cellContent = "•";
+                                        }
                                     } else {
-                                        cellClass += " bg-zinc-950"; // Empty cell safe
-                                        cellContent = "";
+                                        if (cell.number && cell.number > 0) {
+                                            cellClass +=
+                                                " bg-zinc-950 text-green-500";
+                                            cellContent =
+                                                cell.number.toString();
+                                        } else {
+                                            cellClass += " bg-zinc-950";
+                                            cellContent = "";
+                                        }
                                     }
                                 }
                             }
@@ -217,7 +233,7 @@ const GameplayPage = ({
                 </div>
                 <div className="mt-2 text-center">
                     <p className="font-mono text-xs text-green-400">
-                        Defenses: {grid.defences}/10
+                        Defences: {grid.defences}/10
                     </p>
                 </div>
             </div>
@@ -229,13 +245,11 @@ const GameplayPage = ({
             <Header />
             <main className="flex-1 p-4">
                 <div className="max-w-6xl mx-auto">
-                    {/* Game Status */}
                     <div className="border border-green-600 bg-zinc-900 p-4 mb-4">
                         <div className="flex justify-between items-center font-mono text-sm">
                             <div>
-                                <span className="text-green-400">Session:</span>
-                                <span className="text-green-500 ml-2">
-                                    {sessionId}
+                                <span className="text-green-400">
+                                    Session Established
                                 </span>
                             </div>
                             <div>
@@ -246,7 +260,6 @@ const GameplayPage = ({
                                 </span>
                             </div>
                         </div>
-                        {/* Heartbeat status indicator */}
                         <div className="mt-2 flex justify-between items-center font-mono text-xs">
                             <div>
                                 <span className="text-green-400">
@@ -282,13 +295,12 @@ const GameplayPage = ({
                         </div>
                     </div>
 
-                    {/* Status Warning */}
                     {(gameStatus === "session_expired" ||
                         gameStatus === "opponent_disconnected" ||
                         connectionStatus === "disconnected") && (
                         <div className="border border-red-600 bg-red-900/20 p-4 mb-4">
                             <p className="font-mono text-sm text-red-400 text-center">
-                                ⚠️{" "}
+                                !!!{" "}
                                 {gameStatus === "session_expired"
                                     ? "Game session expired"
                                     : gameStatus === "opponent_disconnected"
@@ -296,19 +308,16 @@ const GameplayPage = ({
                                     : "Connection lost"}
                                 {gameStatus === "session_expired"
                                     ? "! Please disconnect and start a new game."
-                                    : ""}
+                                    : ""}{" "}
+                                !!!
                             </p>
                         </div>
                     )}
 
-                    {/* Grids */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                        {/* Your Grid */}
                         <div>
                             {renderGrid(currentPlayer.grid, false, "YOUR GRID")}
                         </div>
-
-                        {/* Opponent's Grid */}
                         <div>
                             {renderGrid(
                                 opponent.grid,
@@ -325,7 +334,6 @@ const GameplayPage = ({
                         </div>
                     </div>
 
-                    {/* Legend */}
                     <div className="border border-green-600 bg-zinc-900 p-4 mb-4">
                         <h3 className="font-mono text-sm font-bold text-green-400 mb-2">
                             LEGEND
@@ -333,14 +341,22 @@ const GameplayPage = ({
                         <div className="grid grid-cols-2 gap-4 font-mono text-xs border-b border-green-600 pb-4">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-4 h-4 bg-green-600 border border-green-600"></div>
+                                    <div className="w-4 h-4 bg-green-600 border border-green-600 flex items-center justify-center text-zinc-950 text-xs font-bold">
+                                        B
+                                    </div>
                                     <span>Your Base</span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 mb-1">
                                     <div className="w-4 h-4 bg-red-600 border border-green-600 flex items-center justify-center text-white text-xs">
                                         X
                                     </div>
                                     <span>Hit Base</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 bg-yellow-600 border border-green-600 flex items-center justify-center text-zinc-950 text-xs font-bold">
+                                        #
+                                    </div>
+                                    <span>Adjacent enemy bases</span>
                                 </div>
                             </div>
                             <div>
@@ -350,9 +366,15 @@ const GameplayPage = ({
                                     </div>
                                     <span>Miss</span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 mb-1">
                                     <div className="w-4 h-4 bg-zinc-950 border border-green-600"></div>
-                                    <span>Unknown</span>
+                                    <span>Unknown/Empty</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 bg-zinc-950 border border-green-600 flex items-center justify-center text-green-500 text-xs">
+                                        #
+                                    </div>
+                                    <span>Your numbers (visible)</span>
                                 </div>
                             </div>
                         </div>
@@ -362,13 +384,12 @@ const GameplayPage = ({
                         <div className="bg-zinc-950 p-2">
                             <ul className="font-mono text-sm leading-relaxed">
                                 {rules.map((rule, index) => (
-                                    <li key={index}>• {rule}</li>
+                                    <li key={index}>{"> "} {rule}</li>
                                 ))}
                             </ul>
                         </div>
                     </div>
 
-                    {/* Disconnect Button */}
                     <div className="text-center">
                         <button
                             onClick={onDisconnect}

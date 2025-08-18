@@ -143,15 +143,6 @@ public class GameplayService {
                 defender.getGrid().defenceAttacked(); // reduces grid's defence by 1
             }
 
-            // !!! CHECK WIN CONDITION !!!
-            if (defender.didPlayerLose()) {
-                logger.info(attacker.getPlayerId() + " WON!!!");
-
-                // handle endgame logic - handleEndGame()
-                handleEndGame(matchInfo, attacker.getPlayerId());
-                return;
-            }
-
             // switch turns
             attacker.setTurn(false);
             defender.setTurn(true);
@@ -172,6 +163,15 @@ public class GameplayService {
 
         // notify both players (via STOMP)
         messagingTemplate.convertAndSend("/subscribe/game/" + attackPayload.getSessionId(), matchInfo);
+
+        // !!! CHECK WIN CONDITION !!!
+        if (defender.didPlayerLose()) {
+            logger.info(attacker.getPlayerId() + " WON!!!");
+
+            // handle endgame logic - handleEndGame()
+            handleEndGame(matchInfo, attacker.getPlayerId());
+            return;
+        }
     }
 
     public void handleEndGame(MatchInfo matchInfo, String winnerId) {

@@ -3,11 +3,12 @@ import Footer from "../components/Footer";
 
 const RulesPage = ({ onNavigate }) => {
     const rules = [
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, dicta",
+        "AIM: Destroy all enemy defence bases.",
+        "WINNER: First to eliminate all enemy bases.",
+        "Click a cell to attack.",
+        "Hit a base - enemy loses the base.",
+        "Hit an empty cell - show the count of nearby enemy bases.",
+        "TIP: strategise attacks based on the count of nearby enemy bases."
     ];
 
     return (
@@ -23,7 +24,7 @@ const RulesPage = ({ onNavigate }) => {
                     <div className="bg-zinc-950 p-6 border-b border-green-600">
                         <ul className="font-mono text-sm leading-relaxed space-y-2">
                             {rules.map((rule, index) => (
-                                <li key={index}>• {rule}</li>
+                                <li key={index}>{"> "} {rule}</li>
                             ))}
                         </ul>
                     </div>
@@ -32,7 +33,7 @@ const RulesPage = ({ onNavigate }) => {
                             onClick={() => onNavigate("home")}
                             className="bg-green-500 text-zinc-950 font-mono font-bold py-2 px-6 border border-green-600 hover:bg-zinc-900 hover:text-green-500 transition-colors"
                         >
-                            Go Back
+                            Back to Home
                         </button>
                     </div>
                 </div>
