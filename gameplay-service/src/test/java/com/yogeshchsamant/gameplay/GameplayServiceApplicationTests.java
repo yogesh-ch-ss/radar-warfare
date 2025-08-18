@@ -271,7 +271,7 @@ class GameplayServiceApplicationTests {
 		assertEquals(sessionId, payload.getSessionId());
 		assertEquals("attacker", payload.getWinnerId());
 
-		// Should NOT save updated match info back to Redis (game ended)
-		verify(valueOperations, never()).set(eq("game:" + sessionId), any(), any(Duration.class));
+		// Should save updated match info back to Redis (game ended)
+		verify(valueOperations).set(eq("game:" + sessionId), any(), any(Duration.class));
 	}
 }
