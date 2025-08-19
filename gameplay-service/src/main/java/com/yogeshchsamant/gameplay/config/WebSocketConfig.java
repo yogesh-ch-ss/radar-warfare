@@ -40,6 +40,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         registry.addEndpoint("/gameplay-ws") // endpoint to connect to the websocket - every client should init via this
                 .setAllowedOriginPatterns("*") // allow from all (*) origin
+                .setAllowedOrigins(
+                        "http://localhost:3000",
+                        "https://*.vercel.app",
+                        "https://radar-warfare-gamma.vercel.app")
                 .withSockJS(); // support SockJS fallback
 
     }

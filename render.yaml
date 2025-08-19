@@ -1,0 +1,50 @@
+services:
+    # Redis Database
+    - type: redis
+      name: radar-warfare-redis
+      plan: free # Can upgrade to starter ($7/month) for persistence
+      maxmemoryPolicy: allkeys-lru
+
+    # Matchmaking Service
+    - type: web
+      name: radar-warfare-matchmaking
+      runtime: docker
+      plan: free # Can upgrade to starter ($7/month) for always-on
+      dockerfilePath: ./matchmaking-service/Dockerfile
+      dockerContext: ./matchmaking-service
+      healthCheckPath: /health
+      envVars:
+          - key: REDIS_HOST
+            fromService:
+                type: redis
+                name: radar-warfare-redis
+                property: host
+          - key: REDIS_PORT
+            fromService:
+                type: redis
+                name: radar-warfare-redis
+                property: port
+          - key: PORT
+            value: 10000
+
+    # Gameplay Service
+    - type: web
+      name: radar-warfare-gameplay
+      runtime: docker
+      plan: free # Can upgrade to starter ($7/month) for always-on
+      dockerfilePath: ./gameplay-service/Dockerfile
+      dockerContext: ./gameplay-service
+      healthCheckPath: /health
+      envVars:
+          - key: REDIS_HOST
+            fromService:
+                type: redis
+                name: radar-warfare-redis
+                property: host
+          - key: REDIS_PORT
+            fromService:
+                type: redis
+                name: radar-warfare-redis
+                property: port
+          - key: PORT
+            value: 10000

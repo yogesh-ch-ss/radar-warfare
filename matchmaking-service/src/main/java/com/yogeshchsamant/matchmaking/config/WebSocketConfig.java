@@ -39,7 +39,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
          */
 
         registry.addEndpoint("/ws") // endpoint to connect to the websocket - every client should init via this
-                .setAllowedOriginPatterns("*") // allow from all (*) origin
+                .setAllowedOriginPatterns("*")
+                .setAllowedOrigins(
+                        "http://localhost:3000",
+                        "https://*.vercel.app",
+                        "https://radar-warfare-gamma.vercel.app") // allow from all (*) origin
                 .withSockJS(); // support SockJS fallback
 
     }
