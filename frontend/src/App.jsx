@@ -6,6 +6,8 @@ import RulesPage from "./pages/RulesPage";
 import MatchmakingPage from "./pages/MatchmakingPage";
 import GameplayPage from "./pages/GameplayPage";
 
+import Config from "./config/Config";
+
 const App = () => {
     const [currentPage, setCurrentPage] = useState("home");
     const [playerId, setPlayerId] = useState("");
@@ -103,7 +105,9 @@ const App = () => {
     // Connect to matchmaking WebSocket
     const connectToMatchmaking = (playerIdToUse) => {
         try {
-            const socket = new window.SockJS("http://localhost:8081/ws");
+            // const socket = new window.SockJS("http://localhost:8081/ws");
+            const socket = new window.SockJS(`${Config.MATCHMAKING_URL}/ws`);
+
             const client = window.Stomp.over(socket);
 
             matchmakingClientRef.current = client;
@@ -156,9 +160,14 @@ const App = () => {
     // Connect to gameplay WebSocket
     const connectToGameplay = (matchInfo, playerIdToUse) => {
         try {
+            // const gameplaySocket = new window.SockJS(
+            //     "http://localhost:8082/gameplay-ws"
+            // );
+
             const gameplaySocket = new window.SockJS(
-                "http://localhost:8082/gameplay-ws"
+                `${Config.GAMEPLAY_URL}/gameplay-ws`
             );
+
             const gameplayClient = window.Stomp.over(gameplaySocket);
 
             gameplayClientRef.current = gameplayClient;

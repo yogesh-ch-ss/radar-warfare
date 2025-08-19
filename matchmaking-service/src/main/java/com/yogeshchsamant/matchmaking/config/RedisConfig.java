@@ -16,11 +16,24 @@ public class RedisConfig {
     // @Value("${spring.redis.port}")
     // private int redisPort;
 
+    // @Bean
+    // public RedisConnectionFactory redisConnectionFactory() {
+    // // return new LettuceConnectionFactory("localhost", 6379); // localhost
+    // // return new LettuceConnectionFactory(); // docker-compose
+    // return new LettuceConnectionFactory("redis", 6379); // docker-compose
+    // }
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        // return new LettuceConnectionFactory("localhost", 6379); // localhost
-        // return new LettuceConnectionFactory(); // docker-compose
-        return new LettuceConnectionFactory("redis", 6379); // docker-compose
+        String redisHost = System.getenv("REDIS_HOST");
+        String redisPort = System.getenv("REDIS_PORT");
+
+        if (redisHost == null)
+            redisHost = "redis";
+        if (redisPort == null)
+            redisPort = "6379";
+
+        return new LettuceConnectionFactory(redisHost, Integer.parseInt(redisPort));
     }
 
     @Bean
