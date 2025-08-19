@@ -3,6 +3,7 @@ services:
     - type: redis
       name: radar-warfare-redis
       plan: free # Can upgrade to starter ($7/month) for persistence
+      ipAllowList: [] # <-- This line is REQUIRED. Empty array = no public access, internal only.
       maxmemoryPolicy: allkeys-lru
 
     # Matchmaking Service
@@ -24,8 +25,8 @@ services:
                 type: redis
                 name: radar-warfare-redis
                 property: port
-          - key: PORT
-            value: 10000
+          # - key: PORT
+          #   value: 10000
 
     # Gameplay Service
     - type: web
@@ -46,5 +47,5 @@ services:
                 type: redis
                 name: radar-warfare-redis
                 property: port
-          - key: PORT
-            value: 10000
+          # - key: PORT
+          #   value: 10000
