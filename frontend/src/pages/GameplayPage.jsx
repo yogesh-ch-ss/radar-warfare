@@ -118,7 +118,7 @@ const GameplayPage = ({
         }
         return {
             text: isMyTurn ? "YOUR TURN" : "OPPONENT'S TURN",
-            className: isMyTurn ? "text-green-400" : "text-red-400",
+            className: isMyTurn ? "text-green-400 px-6 py-2 border border-2 border-green-600 text-lg" : "text-red-400",
         };
     };
 
@@ -232,7 +232,7 @@ const GameplayPage = ({
                     )}
                 </div>
                 <div className="mt-2 text-center">
-                    <p className="font-mono text-xs text-green-400">
+                    <p className="font-mono text-xl text-green-400 font-bold">
                         Defences: {grid.defences}/10
                     </p>
                 </div>
