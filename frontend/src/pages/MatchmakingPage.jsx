@@ -146,7 +146,7 @@ const MatchmakingPage = ({
                     </div>
                 </div>
             </main>
-            <Footer onNavigate={onNavigate} />
+            <Footer onNavigate={() => {}} />
         </div>
     );
 };

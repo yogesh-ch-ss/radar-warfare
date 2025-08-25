@@ -110,6 +110,9 @@ const App = () => {
 
             const client = window.Stomp.over(socket);
 
+            // Disable STOMP debug messages completely
+            client.debug = null;
+
             matchmakingClientRef.current = client;
 
             client.connect(
@@ -169,6 +172,9 @@ const App = () => {
             );
 
             const gameplayClient = window.Stomp.over(gameplaySocket);
+
+            // Disable STOMP debug messages completely
+            gameplayClient.debug = null;
 
             gameplayClientRef.current = gameplayClient;
 
