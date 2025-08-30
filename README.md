@@ -1,11 +1,10 @@
 # Radar Warfare
-A real-time web-based online multiplayer game
+
+> **A real-time web-based online multiplayer game**
 
 ---
 
 **Radar Warfare** is a web-based multiplayer game designed as a dissertation project for MSc Software Development at the University of Glasgow. The project explores microservice architecture, real-time communication, and scalable infrastructure within a browser-playable game.
-
----
 
 ## Deployed version
 
@@ -25,11 +24,7 @@ The above webpages must display “Service is healthy” message.
 
 </aside>
 
----
-
 ## How to run locally
-
----
 
 ## Overview
 
@@ -37,48 +32,40 @@ Radar Warfare demonstrates how modern distributed systems concepts can be applie
 
 The system leverages:
 
-- **Microservices** for matchmaking and gameplay
-- **Redis** for fast in-memory game state management
-- **STOMP over WebSockets** for real-time communication between players and services
-- **Docker** for containerized deployment
-
----
+-   **Microservices** for matchmaking and gameplay
+-   **Redis** for fast in-memory game state management
+-   **STOMP over WebSockets** for real-time communication between players and services
+-   **Docker** for containerized deployment
 
 ## Features
 
-- Automatic player matchmaking with session management
-- Real-time game updates using WebSockets (STOMP protocol)
-- Scalable architecture supporting multiple independent matches in parallel
-- Redis-backed turn-based gameplay logic with validation and endgame detection
-- Session logging for analysis and persistence
-
----
+-   Automatic player matchmaking with session management
+-   Real-time game updates using WebSockets (STOMP protocol)
+-   Scalable architecture supporting multiple independent matches in parallel
+-   Redis-backed turn-based gameplay logic with validation and endgame detection
+-   Session logging for analysis and persistence
 
 ## Architecture
 
 The project follows a **microservices-based architecture**, where each service has a dedicated responsibility. Communication occurs through WebSockets and Redis.
 
----
-
 ## Technology Stack
 
 **Frontend**
 
-- React (Vite)
-- Tailwind CSS
+-   React (Vite)
+-   Tailwind CSS
 
 **Backend Services - Matchmaking microservice and Gameplay microservice**
 
-- Spring Boot (Java)
-- WebSocket + STOMP
-- Redis (in-memory DB)
+-   Spring Boot (Java)
+-   WebSocket + STOMP
+-   Redis (in-memory DB)
 
 **Infrastructure**
 
-- Docker (multi-container environment)
-- Docker Compose
-
----
+-   Docker (multi-container environment)
+-   Docker Compose
 
 ## Microservices
 
@@ -93,8 +80,6 @@ The project follows a **microservices-based architecture**, where each service 
     - Pushes real-time updates to both players
     - Heartbeat monitoring to ensure player connectivity
 
----
-
 ## Game Flow
 
 1. Player connects via frontend
@@ -103,8 +88,6 @@ The project follows a **microservices-based architecture**, where each service 
 4. Players take turns attacking via WebSocket messages
 5. Gameplay service validates moves and updates state
 6. Endgame conditio is detected and notified to both clients
-
----
 
 ## Deployment
 
@@ -124,15 +107,11 @@ Ensure that Docker application (daemon) is running in your local system
 
 Containers:
 
-- `redis`
-- `matchmaking-service`
-- `gameplay-service`
-- `frontend`
-
----
+-   `redis`
+-   `matchmaking-service`
+-   `gameplay-service`
+-   `frontend`
 
 ## Acknowledgments
 
-- University of Glasgow MSc Software Development program
-
----
+-   University of Glasgow MSc Software Development program
