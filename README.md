@@ -2,29 +2,39 @@
 
 > **A real-time web-based online multiplayer game**
 
----
+> [radar-warfare-gamma.vercel.app](https://radar-warfare-gamma.vercel.app/)
 
-**Radar Warfare** is a web-based multiplayer game designed as a dissertation project for MSc Software Development at the University of Glasgow. The project explores microservice architecture, real-time communication, and scalable infrastructure within a browser-playable game.
+**Radar Warfare** is a web-based multiplayer game designed as a dissertation project for MSc Software Development at the University of Glasgow, 2025. The project explores microservice architecture, real-time communication, and scalable infrastructure within a browser-playable game.
 
 ## Deployed version
 
 The deployed version of this application is available at
 
-[https://radar-warfare-gamma.vercel.app](https://radar-warfare-gamma.vercel.app/)
+[`https://radar-warfare-gamma.vercel.app`](https://radar-warfare-gamma.vercel.app/)
 
 <aside>
 
-Before running the application, ensure the health of the service via
+Before running the application, ensure the health of the services via
 
-https://radar-warfare-matchmaking.onrender.com/health
+[`https://radar-warfare-matchmaking.onrender.com/health`](https://radar-warfare-matchmaking.onrender.com/health)
 
-https://radar-warfare-gameplay.onrender.com/health
+[`https://radar-warfare-gameplay.onrender.com/health`](https://radar-warfare-gameplay.onrender.com/health)
 
-The above webpages must display “Service is healthy” message.
+The above webpages must display “**Service is healthy**” message.
 
 </aside>
 
-## How to run locally
+## Run locally
+
+1. Download/clone the repository.
+2. Ensure that the docker application (daemon) is running in your local system.
+3. In the root directory of this project,
+
+    ```bash
+    docker compose up -d --build
+    ```
+
+4. Open the application on [`http://localhost:3000`](http://localhost:3000/)
 
 ## Overview
 
@@ -70,7 +80,7 @@ The project follows a **microservices-based architecture**, where each service 
 ## Microservices
 
 1. **Matchmaking Service**
-    - Pairs players automatically
+    - Matches players automatically
     - Generates a unique session ID
     - Sends `MatchInfo` payloads to clients
 2. **Gameplay Service**
@@ -99,11 +109,7 @@ The entire system runs in Docker containers.
 docker compose up -d --build
 ```
 
-<aside>
-
-Ensure that Docker application (daemon) is running in your local system
-
-</aside>
+> Ensure that Docker application (daemon) is running in your local system
 
 Containers:
 
