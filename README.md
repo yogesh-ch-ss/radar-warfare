@@ -1,10 +1,10 @@
 # Radar Warfare
 
-> **A real-time web-based online multiplayer game**
+> [`https://radar-warfare-gamma.vercel.app`](https://radar-warfare-gamma.vercel.app/)
 
-> [radar-warfare-gamma.vercel.app](https://radar-warfare-gamma.vercel.app/)
+**Radar Warfare** is a web-based multiplayer game designed as a dissertation project for MSc Software Development 2025 at the University of Glasgow. The project explores microservice architecture, real-time communication, and scalable infrastructure within a browser-playable game.
 
-**Radar Warfare** is a web-based multiplayer game designed as a dissertation project for MSc Software Development at the University of Glasgow, 2025. The project explores microservice architecture, real-time communication, and scalable infrastructure within a browser-playable game.
+## Table of Contents
 
 ## Deployed version
 
@@ -12,17 +12,15 @@ The deployed version of this application is available at
 
 [`https://radar-warfare-gamma.vercel.app`](https://radar-warfare-gamma.vercel.app/)
 
-<aside>
+### Disclaimer
 
-Before running the application, ensure the health of the services via
-
-[`https://radar-warfare-matchmaking.onrender.com/health`](https://radar-warfare-matchmaking.onrender.com/health)
+Before running the application / for troubleshooting, ensure the health of the services via
 
 [`https://radar-warfare-gameplay.onrender.com/health`](https://radar-warfare-gameplay.onrender.com/health)
 
-The above webpages must display “**Service is healthy**” message.
+[`https://radar-warfare-matchmaking.onrender.com/health`](https://radar-warfare-matchmaking.onrender.com/health)
 
-</aside>
+The above webpages must display “**Service is healthy**” message.
 
 ## Run locally
 
