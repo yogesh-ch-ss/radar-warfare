@@ -4,6 +4,8 @@
 
 **Radar Warfare** is a web-based multiplayer game designed as a dissertation project for MSc Software Development 2025 at the University of Glasgow. The project explores microservice architecture, real-time communication, and scalable infrastructure within a browser-playable game.
 
+> The presentation video is available at [`https://youtu.be/k6ToBv2GDvg`](https://youtu.be/k6ToBv2GDvg)
+
 > Check Requirements.docx for dependencies
 
 ## Deployed version
