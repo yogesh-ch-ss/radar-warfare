@@ -4,7 +4,7 @@
 
 **Radar Warfare** is a web-based multiplayer game designed as a dissertation project for MSc Software Development 2025 at the University of Glasgow. The project explores microservice architecture, real-time communication, and scalable infrastructure within a browser-playable game.
 
-## Table of Contents
+> Check Requirements.docx for dependencies
 
 ## Deployed version
 
@@ -14,7 +14,7 @@ The deployed version of this application is available at
 
 ### Disclaimer
 
-Before running the application / for troubleshooting, ensure the health of the services via
+The application runs on free tier in the deployment platform, and the server shuts down due to inactivity. Before running the application / for troubleshooting, ensure the health of the services via
 
 [`https://radar-warfare-gameplay.onrender.com/health`](https://radar-warfare-gameplay.onrender.com/health)
 
@@ -80,7 +80,6 @@ The project follows a **microservices-based architecture**, where each service 
 1. **Matchmaking Service**
     - Matches players automatically
     - Generates a unique session ID
-    - Sends `MatchInfo` payloads to clients
 2. **Gameplay Service**
     - Manages game state in Redis
     - Validates moves and enforces turn order
