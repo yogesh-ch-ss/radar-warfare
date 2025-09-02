@@ -6,7 +6,7 @@
 
 > The presentation video is available at [`https://youtu.be/k6ToBv2GDvg`](https://youtu.be/k6ToBv2GDvg)
 
-> Check Requirements.docx for dependencies
+> Check `SoftwarePrereqs.docx` for dependencies
 
 ## Deployed version
 
